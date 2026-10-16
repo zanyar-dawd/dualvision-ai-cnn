@@ -1,6 +1,24 @@
 # DualVision AI status
 
-Verified on 2026-10-16. **The baseline implementation and empirical report are complete. The requested higher-accuracy experiment is prepared but not yet trained.** The required submission is `Homework_5_DualVision.ipynb`. Fill in its student/course/instructor/date placeholders before submitting.
+Verified on 2026-10-16. **The baseline implementation and empirical report are complete. The requested higher-accuracy experiment is prepared but not yet trained.** The required submission is `Homework_5_DualVision.ipynb`. Its first cell now contains only the requested student name: Zanyar Dawd.
+
+## Automatic CPU/CUDA portability — completed 2026-10-16
+
+Automatic mode now checks `torch.cuda.is_available()` and verifies actual matrix multiplication and convolution. Working CUDA selects the NVIDIA GPU; absent CUDA or failed verification uses CPU, with any failure disclosed in runtime metadata and a warning. Explicit `cpu` overrides automatic selection; explicit `cuda` remains a strict troubleshooting request. The notebook prints the selected device and GPU name. Mid-training hardware faults still stop and save progress.
+
+Saved-weight loading uses `map_location=device`. Models and inference inputs move to the selected device, including upload callbacks and Grad-CAM input handling. Baseline and candidate inference default to `auto`. The final notebook still defaults to pretrained loading with training and downloads disabled.
+
+Final verification:
+
+- `results/portability_tests.xml`: **38 passed, 0 failures, 0 errors, 0 skips**. Covers real CPU/CUDA forward and optimizer steps, checkpoint device mapping, CPU/GPU prediction agreement, simulated failed-CUDA fallback, forced CPU, and Grad-CAM. There are 14 upstream Matplotlib/pyparsing deprecation warnings.
+- `results/cpu_notebook_verification.json`: all 22 code cells passed with CUDA hidden and `DEVICE_PREFERENCE="auto"`; both real upload callbacks and Grad-CAM passed in an empty folder, without datasets, source modules or retraining.
+- `results/cuda_notebook_verification.json`: the same complete notebook passed with automatic selection of the actual NVIDIA GPU, including both upload callbacks and Grad-CAM, with no datasets or retraining.
+- `results/submission_verification.json`: valid executed notebook, 27 verified embedded assets, nine displayed figures identical to saved results, CPU/CUDA verification passed.
+- SHA-256 comparison against the pre-edit snapshot confirmed **all 37 baseline checkpoint/result files unchanged byte-for-byte**. Recorded accuracy remains MNIST **99.25%**, CIFAR-10 **90.92%**. No training or benchmark reevaluation was performed.
+
+An initial rebuild/test collection failed due to an incorrectly escaped device-display f-string. It was corrected, the notebook rebuilt and repackaged, and the full test suite and both isolated notebook executions then passed. No unresolved portability failure remains. CPU-only behavior was tested by hiding CUDA on the workstation; a separate physical laptop and fresh CPU-only wheel installation were not available.
+
+Manual CPU override: set `DEVICE_PREFERENCE = "cpu"` in the notebook, `DUALVISION_DEVICE=cpu` in its environment, `--device cpu` in training CLIs, or `device="cpu"` in prediction calls. Default `auto` uses verified CUDA when available. The sections below retain the earlier baseline and candidate experiment history.
 
 ## Requested accuracy upgrade — pending additional runtime approval
 
@@ -62,6 +80,6 @@ The standard Python 3.12.10 MSI failed with Windows Installer 2502/1603. A proje
 
 - **Completed:** both trained CNNs, true test metrics, saved checkpoints, plots, per-class reports, Grad-CAM, upload inference, comparison/error discussion, reproducibility settings, tests, documentation and the executed self-contained notebook.
 - **Partially verified:** teacher portability has been verified on the CPU execution path with CUDA hidden and an empty working directory. A separate physical teacher laptop and a fresh CPU-only wheel installation were not available for testing. CPU installation instructions are in `TEACHER_QUICKSTART.md` and the notebook.
-- **Remaining before baseline submission:** fill the student/course/instructor/date placeholders and submit the `.ipynb`. The baseline experiment is complete; the newly requested accuracy upgrade has the pending work listed above.
+- **Remaining before baseline submission:** submit the `.ipynb`. The student name is complete and the unrequested ID/course/instructor/date fields were removed. The baseline experiment is complete; the newly requested accuracy upgrade has the pending work listed above.
 
 Default notebook settings are `ALLOW_TRAINING=False` and `DOWNLOAD_DATA=False`. Rebuilding the notebook resets its embedded archive and saved outputs; after source changes, rebuild, package and execute the submission again. Dataset folders, virtual environments, recovery snapshots and standalone checkpoints are Git-ignored. The notebook intentionally embeds only compact selected weights and report assets for independent CPU use.

@@ -8,7 +8,7 @@ from PIL import Image, ImageOps
 from torchvision import transforms
 from src.models.cnn import make_model
 from src.training.engine import load_checkpoint
-from src.utilities.runtime import IMPLEMENTATION_VERSION
+from src.utilities.runtime import IMPLEMENTATION_VERSION, select_device
 
 
 def prepare_user_image(source, dataset: str, mean, std, polarity: str = 'auto'):
@@ -63,28 +63,32 @@ def prepare_user_image(source, dataset: str, mean, std, polarity: str = 'auto'):
     return tensor, image
 
 
-def predict_image(model, source, metadata: dict, device, polarity='auto') -> dict:
+def predict_image(model, source, metadata: dict, device='auto', polarity='auto') -> dict:
     if metadata.get('smoke') or metadata.get('training_status') != 'complete':
         raise ValueError('Predictions require a completed real-data training run.')
+    device, _ = select_device(device)
+    model.to(device)
     tensor, processed = prepare_user_image(source, metadata['dataset'], metadata['mean'], metadata['std'], polarity)
     model.eval()
     with torch.inference_mode():
         probabilities = model(tensor.unsqueeze(0).to(device)).softmax(1)[0].cpu().numpy()
     order = np.argsort(probabilities)[::-1]
-    return {'processed_image': processed, 'tensor': tensor,
+    return {'processed_image': processed, 'tensor': tensor, 'device': str(device),
             'probabilities': probabilities,
             'top_classes': [(metadata['classes'][i], float(probabilities[i])) for i in order[:3]]}
 
 
-def predict_file(path, checkpoint, dataset, device='cpu', polarity='auto') -> dict:
+def predict_file(path, checkpoint, dataset, device='auto', polarity='auto') -> dict:
     """Non-widget fallback, usable in any Python environment with the dependencies."""
-    device = torch.device(device)
+    device, _ = select_device(device)
     model = make_model(dataset)
     meta = load_checkpoint(Path(checkpoint), model, device, {'dataset': dataset, 'smoke': False})
     return predict_image(model, path, meta, device, polarity)
 
 
-def prediction_dashboard(experiments: dict, device):
+def prediction_dashboard(experiments: dict, device='auto'):
+    device, runtime = select_device(device)
+    print(f'Selected device: {device}' + (f" — {runtime['gpu']}" if runtime['gpu'] else ''))
     from IPython.display import display
     try:
         import ipywidgets as widgets

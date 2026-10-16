@@ -1,0 +1,8 @@
+{
+  "baseline_files_checked": 37,
+  "all_byte_identical": true,
+  "training_performed": false,
+  "test_metrics_recomputed": false,
+  "mnist_recorded_accuracy": 0.9925,
+  "cifar10_recorded_accuracy": 0.9092
+}

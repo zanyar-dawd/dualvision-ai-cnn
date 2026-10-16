@@ -31,8 +31,7 @@ def build():
 
     md('''# DualVision AI — Intelligent Digit and Object Recognition
 ## Homework 5 — Building a Model
-**Student:** [Your name] · **Student ID:** [Your ID]  
-**Course:** [Course name] · **Instructor:** [Instructor name] · **Submission date:** [Date]
+**Student:** Zanyar Dawd
 
 **Submission status:** The implementation is complete; real-data experimental results are **pending** until the explicitly enabled training cells finish. Synthetic smoke-test results are never benchmark evidence. Fill in student details and execute the real experiments before submission.
 ''')
@@ -71,7 +70,7 @@ python -m pip install torch==2.8.0 torchvision==0.23.0 --index-url https://downl
 python -m pip install numpy==2.2.6 pandas==2.2.3 matplotlib==3.10.3 scikit-learn==1.6.1 Pillow==11.2.1 jupyterlab==4.4.3 ipywidgets==8.1.7 ipykernel==6.29.5 nbformat==5.10.4 nbclient==0.10.2 pytest==8.3.5
 ```
 
-The final notebook embeds compact trained checkpoints, saved test metrics, figures and demonstration images. Run all cells in a fresh writable folder: they restore and verify these assets, load weights on CPU when CUDA is absent, and display the measured report **without downloading datasets or retraining**. Inference on uploads still executes the real trained model. For the original GPU training workstation, use the same PyTorch pair from the `cu126` index instead of `cpu`; `nvidia-smi` reports driver support, not Toolkit installation. A broken CUDA operation raises an error instead of silently claiming acceleration.
+The final notebook embeds compact trained checkpoints, saved test metrics, figures and demonstration images. Run all cells in a fresh writable folder: they restore and verify these assets, load weights on CPU when CUDA is absent, and display the measured report **without downloading datasets or retraining**. Inference on uploads still executes the real trained model. For the original GPU training workstation, use the same PyTorch pair from the `cu126` index instead of `cpu`; `nvidia-smi` reports driver support, not Toolkit installation. Automatic mode checks `torch.cuda.is_available()` and verifies real matrix multiplication and convolution. If CUDA verification fails, it reports the failure and uses CPU. Set `DEVICE_PREFERENCE = "cpu"` in the next cell (or `DUALVISION_DEVICE=cpu`) for a manual override. Explicit `"cuda"` is a strict diagnostic option and raises on failure. Selected device and GPU name are displayed below. Mid-training hardware faults still stop and save progress; they do not silently change the experiment device.
 
 Run all cells in order. The full implementation below needs no `src/` imports or hidden training script. By default existing compatible checkpoints load and missing models stay pending. For a new real experiment, explicitly set `ALLOW_TRAINING=True` and `DOWNLOAD_DATA=True` after approving downloads and runtime. For another training run use a **new** `EXPERIMENT_ID` and set `RETRAIN=True`; existing checkpoints are never overwritten by retraining. Keep the baseline settings fixed before examining test results.
 
@@ -85,7 +84,7 @@ ALLOW_TRAINING = False
 DOWNLOAD_DATA = False
 RETRAIN = False
 EXPERIMENT_ID = "baseline"
-DEVICE_PREFERENCE = os.environ.get("DUALVISION_DEVICE", "auto")  # CPU portability is explicitly verified
+DEVICE_PREFERENCE = os.environ.get("DUALVISION_DEVICE", "auto")  # Set "cpu" to force CPU troubleshooting.
 SEED = 42
 # The smoke runner sets these environment variables in its child process only.
 SMOKE_TEST = os.environ.get("DUALVISION_SMOKE", "0") == "1"
@@ -103,6 +102,7 @@ if SUBMISSION_ARCHIVE_B64 and not SMOKE_TEST and EXPERIMENT_ID == "baseline":
     code(inline_module('src/utilities/runtime.py'))
     code('''seed_everything(SEED)
 DEVICE, RUNTIME = select_device(DEVICE_PREFERENCE)
+print(f"Selected device: {DEVICE}" + (f" — {RUNTIME['gpu']}" if RUNTIME['gpu'] else ""))
 print(json.dumps(RUNTIME, indent=2))
 print("GPU tensor computation verified" if DEVICE.type == "cuda" else "CPU tensor computation verified")
 ''')
@@ -282,7 +282,7 @@ Repository QA commands (not required by this standalone notebook): `python -m py
                 if item['cell_type'] != 'markdown':
                     continue
                 if item['source'].startswith('# DualVision'):
-                    item['source'] = item['source'].split('**Submission status:**')[0] + '**Submission status:** Real experiments complete. Fill in student/course details before submitting.\n\n' + summary + '\n'
+                    item['source'] = item['source'].split('**Submission status:**')[0] + '**Submission status:** Real experiments complete and student name supplied.\n\n' + summary + '\n'
                 if item['source'].startswith('## 1. Abstract'):
                     item['source'] = ('## 1. Abstract\n'
                         'Two custom PyTorch convolutional networks were trained from scratch on MNIST and CIFAR-10. '

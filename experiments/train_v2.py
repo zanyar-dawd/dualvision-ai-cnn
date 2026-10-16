@@ -100,19 +100,19 @@ def cpu_weights(model):
     return {key: value.detach().cpu().clone() for key, value in model.state_dict().items()}
 
 
-def rng_snapshot(loader):
+def rng_snapshot(loader, device=torch.device('cpu')):
     state = np.random.get_state()
     return {'python': random.getstate(), 'numpy': (state[0], state[1].tolist(), *state[2:]),
-            'torch': torch.get_rng_state(), 'cuda': torch.cuda.get_rng_state_all() if torch.cuda.is_available() else [],
+            'torch': torch.get_rng_state(), 'cuda': torch.cuda.get_rng_state_all() if device.type == 'cuda' else [],
             'loader': loader.generator.get_state()}
 
 
-def restore_rng(state, loader):
+def restore_rng(state, loader, device=torch.device('cpu')):
     random.setstate(state['python'])
     value = state['numpy']
     np.random.set_state((value[0], np.asarray(value[1], dtype=np.uint32), *value[2:]))
     torch.set_rng_state(state['torch'])
-    if torch.cuda.is_available() and state['cuda']:
+    if device.type == 'cuda' and state['cuda']:
         torch.cuda.set_rng_state_all(state['cuda'])
     loader.generator.set_state(state['loader'])
 
@@ -150,7 +150,7 @@ def fit_candidate(model, bundle, device, config, folder, metadata, resume=False)
         if interruption.exists():
             prior = max(prior, json.loads(interruption.read_text())['seconds'])
         prior += 5.0  # budget allowance for any work after the last telemetry sample
-        restore_rng(state['rng'], bundle.train)
+        restore_rng(state['rng'], bundle.train, device)
         assert state['scheduler']['next_epoch'] == len(history) + 1
     if prior >= config['max_minutes'] * 60:
         raise RuntimeError('No training budget remains; do not silently reset the budget.')
@@ -169,7 +169,7 @@ def fit_candidate(model, bundle, device, config, folder, metadata, resume=False)
         except (RuntimeError, FloatingPointError, KeyboardInterrupt) as error:
             elapsed = prior + time.perf_counter() - started
             atomic_torch_save({'state_dict': cpu_weights(model), 'optimizer': optimizer.state_dict(),
-                               'rng': rng_snapshot(bundle.train), 'interrupted_epoch': epoch,
+                               'rng': rng_snapshot(bundle.train, device), 'interrupted_epoch': epoch,
                                'config': config, 'seconds': elapsed}, folder / 'interrupted.pt')
             write_json(folder / 'interruption.json', {'epoch': epoch, 'seconds': elapsed, 'reason': str(error),
                        'resume_policy': 'Resume the complete preceding epoch snapshot; partial epoch is not treated as complete.'})
@@ -191,7 +191,7 @@ def fit_candidate(model, bundle, device, config, folder, metadata, resume=False)
         snapshot = {'candidate_version': CANDIDATE_VERSION, 'dataset': metadata['dataset'], 'config': config, 'metadata': metadata,
                     'model': cpu_weights(model), 'optimizer': optimizer.state_dict(), 'history': list(history),
                     'best_state': best_state, 'best_key': best_key, 'best_epoch': best_epoch, 'bad_epochs': bad_epochs,
-                    'seconds': prior + time.perf_counter() - started, 'rng': rng_snapshot(bundle.train),
+                    'seconds': prior + time.perf_counter() - started, 'rng': rng_snapshot(bundle.train, device),
                     'scheduler': {'kind': 'warmup_cosine', 'next_epoch': epoch + 1}}
         atomic_torch_save(snapshot, folder / 'resume.pt')
         write_json(folder / 'history.json', history)
@@ -271,7 +271,7 @@ def run_candidate(dataset, config, experiment_id='accuracy-v2', device_preferenc
     return result
 
 
-def evaluate_candidate(dataset, config, experiment_id, device_preference='cpu'):
+def evaluate_candidate(dataset, config, experiment_id, device_preference='auto'):
     if experiment_id == 'baseline' or not experiment_id or any(c not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-' for c in experiment_id):
         raise ValueError('Use a new simple experiment ID, never baseline.')
     checkpoint = Path('checkpoints') / experiment_id / dataset / 'best.pt'
@@ -300,7 +300,8 @@ def evaluate_candidate(dataset, config, experiment_id, device_preference='cpu'):
     return evaluation
 
 
-def predict_candidate_file(path, checkpoint, dataset, device='cpu', polarity='auto'):
+def predict_candidate_file(path, checkpoint, dataset, device='auto', polarity='auto'):
+    device, _ = select_device(device)
     model = make_candidate(dataset)
     metadata = load_checkpoint(checkpoint, model, device, {'dataset': dataset, 'candidate_version': CANDIDATE_VERSION})
     return predict_image(model, path, metadata, torch.device(device), polarity)

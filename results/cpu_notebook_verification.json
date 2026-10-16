@@ -23,5 +23,6 @@
   "executed_code_cells": 22,
   "source_modules_available": false,
   "embedded_assets_only": true,
-  "note": "CPU execution verified with CUDA hidden; the installed PyTorch wheel still contains CUDA libraries."
+  "automatic_device_selection": true,
+  "note": "CPU test hides CUDA; CUDA test uses the real GPU. Installed wheel includes CUDA libraries."
 }

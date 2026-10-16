@@ -1,6 +1,7 @@
 {
   "technical_submission_ready": true,
   "executed_code_cells": 22,
+  "automatic_cpu_and_cuda_notebooks_verified": true,
   "embedded_assets_verified": 27,
   "notebook_error_outputs": 0,
   "displayed_report_figures_match_saved_pngs": 9,
@@ -9,5 +10,6 @@
   "real_gradcam_cpu_verified": true,
   "test_metrics_and_figures_audited": true,
   "no_datasets_or_standalone_weights_tracked_by_git": true,
-  "personal_details_pending": true
+  "student_name": "Zanyar Dawd",
+  "personal_details_pending": false
 }

@@ -1,0 +1,28 @@
+{
+  "device": "cuda",
+  "cuda_visible": true,
+  "no_dataset_directory": true,
+  "no_retraining": true,
+  "widget_callbacks": {
+    "mnist": {
+      "passed": true,
+      "prediction": [
+        "7",
+        0.9999998807907104
+      ]
+    },
+    "cifar10": {
+      "passed": true,
+      "prediction": [
+        "cat",
+        0.9999998807907104
+      ]
+    }
+  },
+  "real_gradcam_cuda_verified": true,
+  "executed_code_cells": 22,
+  "source_modules_available": false,
+  "embedded_assets_only": true,
+  "automatic_device_selection": true,
+  "note": "CPU test hides CUDA; CUDA test uses the real GPU. Installed wheel includes CUDA libraries."
+}

@@ -9,6 +9,7 @@ from src.visualization.plots import denormalize, save_fig
 def grad_cam(model, image, target_class: int | None = None):
     if image.ndim != 4 or image.shape[0] != 1:
         raise ValueError('Grad-CAM expects one NCHW image.')
+    image = image.to(next(model.parameters()).device)
     model.eval()
     captured = []
     handle = model.stage3.register_forward_hook(lambda module, inputs, output: captured.append(output))
