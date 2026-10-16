@@ -1,0 +1,24 @@
+{
+  "reason": "Training process terminated externally after epoch 3; cause not established. No safety stop was logged.",
+  "last_telemetry_seconds": 269.016,
+  "prior_attempt_budget_accounting_seconds": 300,
+  "new_run_max_minutes": 115,
+  "approved_combined_max_minutes": 120,
+  "recovery_method": "Fresh seeded run; interrupted checkpoint preserved and not used for final model selection or test evaluation.",
+  "second_interruption": {
+    "after_epoch": 4,
+    "test_evaluated_before_recovery": false,
+    "recovered_on": "2026-10-16",
+    "method": "Best own-training weights; fresh AdamW moments and reseeded RNG; continue cosine schedule at epoch 5.",
+    "checkpoint": "checkpoints/baseline/cifar10/recovery_epoch4.pt",
+    "budget": "Prior active time plus 5-second conservative allowance counted within the 115-minute final-run cap."
+  },
+  "third_interruption": {
+    "after_completed_epoch": 23,
+    "resumed_on": "2026-10-16",
+    "method": "Restore complete epoch-23 weights, AdamW moments, cosine scheduler and Python/NumPy/CPU/CUDA/loader random states.",
+    "last_telemetry_seconds": 1713.0776382999995,
+    "budget_accounting_prior_seconds": 1718.0776382999995,
+    "test_evaluated_before_recovery": false
+  }
+}

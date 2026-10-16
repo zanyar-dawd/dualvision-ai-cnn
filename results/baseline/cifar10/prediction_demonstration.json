@@ -1,0 +1,22 @@
+{
+  "device": "cpu",
+  "source": "official_test_index_0",
+  "true_class": "cat",
+  "top_classes": [
+    [
+      "cat",
+      0.9999998807907104
+    ],
+    [
+      "dog",
+      1.2230216839270724e-07
+    ],
+    [
+      "frog",
+      4.811071788353438e-13
+    ]
+  ],
+  "widget_callback_passed": true,
+  "file_fallback_matches": true,
+  "probabilities_sum": 1.0
+}

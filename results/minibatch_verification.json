@@ -1,0 +1,67 @@
+{
+  "runtime": {
+    "python": "3.12.11",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "device": "cuda",
+    "cuda_available": true,
+    "torch_cuda_runtime": "12.6",
+    "tensor_operation_verified": true,
+    "gpu": "Quadro T1000",
+    "gpu_capability": [
+      7,
+      5
+    ],
+    "compiled_cuda_architectures": [
+      "sm_61",
+      "sm_70",
+      "sm_75",
+      "sm_80",
+      "sm_86",
+      "sm_90"
+    ],
+    "gpu_memory_bytes": 4294705152,
+    "versions": {
+      "torch": "2.8.0+cu126",
+      "torchvision": "0.23.0+cu126",
+      "numpy": "2.2.6",
+      "scikit-learn": "1.6.1",
+      "matplotlib": "3.10.3",
+      "Pillow": "11.2.1"
+    },
+    "deterministic_algorithms": true,
+    "cudnn_benchmark": false,
+    "cpu_threads": 4
+  },
+  "batches": [
+    {
+      "dataset_shape": "mnist",
+      "source": "SYNTHETIC_BATCH_ONLY",
+      "batch_size": 128,
+      "output_shape": [
+        128,
+        10
+      ],
+      "parameters": 421738,
+      "device": "cuda",
+      "optimizer_step_verified": true,
+      "seconds": 0.709568599999784,
+      "peak_allocated_bytes": 145314816,
+      "peak_reserved_bytes": 178257920
+    },
+    {
+      "dataset_shape": "cifar10",
+      "source": "SYNTHETIC_BATCH_ONLY",
+      "batch_size": 64,
+      "output_shape": [
+        64,
+        10
+      ],
+      "parameters": 696618,
+      "device": "cuda",
+      "optimizer_step_verified": true,
+      "seconds": 0.24336730000004536,
+      "peak_allocated_bytes": 312474112,
+      "peak_reserved_bytes": 390070272
+    }
+  ]
+}

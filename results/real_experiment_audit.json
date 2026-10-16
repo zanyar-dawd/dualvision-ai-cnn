@@ -1,0 +1,34 @@
+{
+  "mnist": {
+    "accuracy": 0.9925,
+    "test_loss": 0.026767529836355244,
+    "test_count": 10000,
+    "selected_epoch": 11,
+    "completed_epochs": 15,
+    "training_seconds": 320.8460107000001,
+    "peak_temperature_c": 70.0,
+    "peak_device_memory_mib": 247.0,
+    "checkpoint_metadata_matches": true,
+    "selection_uses_validation_only": true,
+    "prediction_metrics_match": true,
+    "curve_csv_matches_history": true,
+    "class_report_csv_matches": true,
+    "pngs_decode": true
+  },
+  "cifar10": {
+    "accuracy": 0.9092,
+    "test_loss": 0.3988180894613266,
+    "test_count": 10000,
+    "selected_epoch": 49,
+    "completed_epochs": 50,
+    "training_seconds": 3285.7719838,
+    "peak_temperature_c": 73.0,
+    "peak_device_memory_mib": 619.0,
+    "checkpoint_metadata_matches": true,
+    "selection_uses_validation_only": true,
+    "prediction_metrics_match": true,
+    "curve_csv_matches_history": true,
+    "class_report_csv_matches": true,
+    "pngs_decode": true
+  }
+}

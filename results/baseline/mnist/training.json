@@ -1,0 +1,226 @@
+{
+  "implementation": "dualvision-v1",
+  "dataset": "mnist",
+  "smoke": false,
+  "config": {
+    "epochs": 15,
+    "batch_size": 128,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "patience": 5,
+    "max_minutes": 30
+  },
+  "seed": 42,
+  "classes": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9"
+  ],
+  "mean": [
+    0.13073687891823396
+  ],
+  "std": [
+    0.30819040233228273
+  ],
+  "split_sha256": "8215f3981644bbd590d2a3951defaacedcb91fe01d068fa0a49477bb48f45105",
+  "parameters": 421738,
+  "runtime": {
+    "python": "3.12.11",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "device": "cuda",
+    "cuda_available": true,
+    "torch_cuda_runtime": "12.6",
+    "tensor_operation_verified": true,
+    "gpu": "Quadro T1000",
+    "gpu_capability": [
+      7,
+      5
+    ],
+    "compiled_cuda_architectures": [
+      "sm_61",
+      "sm_70",
+      "sm_75",
+      "sm_80",
+      "sm_86",
+      "sm_90"
+    ],
+    "gpu_memory_bytes": 4294705152,
+    "versions": {
+      "torch": "2.8.0+cu126",
+      "torchvision": "0.23.0+cu126",
+      "numpy": "2.2.6",
+      "scikit-learn": "1.6.1",
+      "matplotlib": "3.10.3",
+      "Pillow": "11.2.1"
+    },
+    "deterministic_algorithms": true,
+    "cudnn_benchmark": false,
+    "cpu_threads": 4
+  },
+  "data_sizes": [
+    54000,
+    6000,
+    10000
+  ],
+  "num_workers": 0,
+  "precision": "float32",
+  "augmentation": "none",
+  "best_epoch": 11,
+  "best_validation_accuracy": 0.9925,
+  "history": [
+    {
+      "epoch": 1,
+      "lr": 0.001,
+      "seconds": 18.969543900000644,
+      "train_loss": 0.21515447512600158,
+      "train_accuracy": 0.9341111111111111,
+      "validation_loss": 0.05921298790971438,
+      "validation_accuracy": 0.9825
+    },
+    {
+      "epoch": 2,
+      "lr": 0.0009890738003669028,
+      "seconds": 21.058059400000275,
+      "train_loss": 0.08458907276585147,
+      "train_accuracy": 0.9741296296296297,
+      "validation_loss": 0.047816049675146736,
+      "validation_accuracy": 0.987
+    },
+    {
+      "epoch": 3,
+      "lr": 0.0009567727288213003,
+      "seconds": 21.240101600000344,
+      "train_loss": 0.06427757767284357,
+      "train_accuracy": 0.9804444444444445,
+      "validation_loss": 0.0485427641744415,
+      "validation_accuracy": 0.9875
+    },
+    {
+      "epoch": 4,
+      "lr": 0.0009045084971874737,
+      "seconds": 20.862938600000234,
+      "train_loss": 0.05266476269894176,
+      "train_accuracy": 0.9840185185185185,
+      "validation_loss": 0.041317234153548876,
+      "validation_accuracy": 0.9883333333333333
+    },
+    {
+      "epoch": 5,
+      "lr": 0.0008345653031794292,
+      "seconds": 23.25877500000024,
+      "train_loss": 0.04321555449013357,
+      "train_accuracy": 0.9865925925925926,
+      "validation_loss": 0.037029334327826895,
+      "validation_accuracy": 0.991
+    },
+    {
+      "epoch": 6,
+      "lr": 0.00075,
+      "seconds": 24.419247199999518,
+      "train_loss": 0.03746028398418868,
+      "train_accuracy": 0.9878518518518519,
+      "validation_loss": 0.045339069368938605,
+      "validation_accuracy": 0.9885
+    },
+    {
+      "epoch": 7,
+      "lr": 0.0006545084971874737,
+      "seconds": 22.506274100000155,
+      "train_loss": 0.03286456629689093,
+      "train_accuracy": 0.9892962962962963,
+      "validation_loss": 0.036865371018648146,
+      "validation_accuracy": 0.9893333333333333
+    },
+    {
+      "epoch": 8,
+      "lr": 0.0005522642316338268,
+      "seconds": 21.671799799999462,
+      "train_loss": 0.028524720754612376,
+      "train_accuracy": 0.9911481481481481,
+      "validation_loss": 0.03518599402780334,
+      "validation_accuracy": 0.9906666666666667
+    },
+    {
+      "epoch": 9,
+      "lr": 0.0004477357683661734,
+      "seconds": 21.26155689999996,
+      "train_loss": 0.023996857130831037,
+      "train_accuracy": 0.9923148148148148,
+      "validation_loss": 0.037469355282063285,
+      "validation_accuracy": 0.9913333333333333
+    },
+    {
+      "epoch": 10,
+      "lr": 0.0003454915028125264,
+      "seconds": 20.96020679999947,
+      "train_loss": 0.018863771513380385,
+      "train_accuracy": 0.9940740740740741,
+      "validation_loss": 0.036326979429771505,
+      "validation_accuracy": 0.9918333333333333
+    },
+    {
+      "epoch": 11,
+      "lr": 0.0002500000000000001,
+      "seconds": 20.086381199999778,
+      "train_loss": 0.015818030421656592,
+      "train_accuracy": 0.9949074074074075,
+      "validation_loss": 0.03541165866299222,
+      "validation_accuracy": 0.9925
+    },
+    {
+      "epoch": 12,
+      "lr": 0.00016543469682057103,
+      "seconds": 20.193701500000316,
+      "train_loss": 0.01400560611003527,
+      "train_accuracy": 0.9955740740740741,
+      "validation_loss": 0.03623939311752717,
+      "validation_accuracy": 0.9916666666666667
+    },
+    {
+      "epoch": 13,
+      "lr": 9.549150281252631e-05,
+      "seconds": 21.28517219999958,
+      "train_loss": 0.01343989929087736,
+      "train_accuracy": 0.9957222222222222,
+      "validation_loss": 0.035508108688518406,
+      "validation_accuracy": 0.9921666666666666
+    },
+    {
+      "epoch": 14,
+      "lr": 4.322727117869951e-05,
+      "seconds": 21.746162899999945,
+      "train_loss": 0.011150755787233787,
+      "train_accuracy": 0.9966481481481482,
+      "validation_loss": 0.03614221273176372,
+      "validation_accuracy": 0.9921666666666666
+    },
+    {
+      "epoch": 15,
+      "lr": 1.0926199633097156e-05,
+      "seconds": 21.241845499999727,
+      "train_loss": 0.011157606180964244,
+      "train_accuracy": 0.9966851851851852,
+      "validation_loss": 0.03611348474180947,
+      "validation_accuracy": 0.992
+    }
+  ],
+  "training_status": "complete",
+  "stop_reason": "epoch_limit",
+  "training_seconds": 320.8460107000001,
+  "peak_gpu_memory_bytes": 149281280,
+  "telemetry": {
+    "sample_interval_seconds": 5.0,
+    "sample_count": 64,
+    "temperature_stop_c": 85,
+    "memory_stop_fraction": 0.95,
+    "peak_temperature_c": 70.0,
+    "peak_device_memory_used_mib": 247.0
+  }
+}

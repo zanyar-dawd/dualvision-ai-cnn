@@ -1,0 +1,11 @@
+{
+  "confusion_matrix.png": "a5bd45c801c8be02b790d6688ab744c9dae069a2514c3d51475a6d2bfe961186",
+  "correct_samples.png": "990a42461d0b07867ca75d60e4b147a86fd6baec7e36ad18eb70f666c1f9c8a7",
+  "evaluation.json": "740d693707a376dd6c4fd0a8a1221672523305158fbe858f453a4966a683fa3b",
+  "history.csv": "0debe434a7c7ad5622c038023d07b615c450dc61b8288bea3f1fc0c27eb9133d",
+  "learning_curves.png": "352da611483a48088eef82ca10a163bf982e1f65ba2b2f9f42e7aedeb02a34b8",
+  "mistakes.png": "8c5d4e2e6e32875bcf698d15d172f53bddbc8e8c0eec295dacf4d3b09bb8b62b",
+  "per_class_metrics.csv": "fe7963685398445e9953060f102847d1416d71f1627f33cbda7518cbecee3994",
+  "prediction_demonstration.json": "e852632525170c42119664085074ebfebf60a940fda35ba5b0e39a0a3810dd2f",
+  "training.json": "496d7a69ee2ca0cfaa602a0e1003ba6ee46bc132b7bab2879894f57779e3b5fb"
+}

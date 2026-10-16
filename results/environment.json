@@ -1,0 +1,33 @@
+{
+  "python": "3.12.11",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "device": "cuda",
+  "cuda_available": true,
+  "torch_cuda_runtime": "12.6",
+  "tensor_operation_verified": true,
+  "gpu": "Quadro T1000",
+  "gpu_capability": [
+    7,
+    5
+  ],
+  "compiled_cuda_architectures": [
+    "sm_61",
+    "sm_70",
+    "sm_75",
+    "sm_80",
+    "sm_86",
+    "sm_90"
+  ],
+  "gpu_memory_bytes": 4294705152,
+  "versions": {
+    "torch": "2.8.0+cu126",
+    "torchvision": "0.23.0+cu126",
+    "numpy": "2.2.6",
+    "scikit-learn": "1.6.1",
+    "matplotlib": "3.10.3",
+    "Pillow": "11.2.1"
+  },
+  "deterministic_algorithms": true,
+  "cudnn_benchmark": false,
+  "cpu_threads": 4
+}

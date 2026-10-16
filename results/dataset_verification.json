@@ -1,0 +1,16 @@
+{
+  "mnist": {
+    "official_training_count": 60000,
+    "official_test_count": 10000,
+    "torchvision_download_integrity_checks": "passed"
+  },
+  "cifar10": {
+    "official_training_count": 50000,
+    "official_test_count": 10000,
+    "torchvision_download_integrity_checks": "passed",
+    "archive_md5": "c58f30108f718f92721af3b95e74349a",
+    "archive_bytes": 170498071,
+    "recovery_mirror": "https://huggingface.co/datasets/MIT-OL-AI-D/cifar-10-python/resolve/a48007227f9e2cd0af96175f4afb5ac4965e261b/cifar-10-python.tar.gz",
+    "note": "Unmodified official archive, recovered after original host transfer failed."
+  }
+}

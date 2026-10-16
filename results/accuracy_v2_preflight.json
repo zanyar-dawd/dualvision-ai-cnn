@@ -1,0 +1,77 @@
+{
+  "runtime": {
+    "python": "3.12.11",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "device": "cuda",
+    "cuda_available": true,
+    "torch_cuda_runtime": "12.6",
+    "tensor_operation_verified": true,
+    "gpu": "Quadro T1000",
+    "gpu_capability": [
+      7,
+      5
+    ],
+    "compiled_cuda_architectures": [
+      "sm_61",
+      "sm_70",
+      "sm_75",
+      "sm_80",
+      "sm_86",
+      "sm_90"
+    ],
+    "gpu_memory_bytes": 4294705152,
+    "versions": {
+      "torch": "2.8.0+cu126",
+      "torchvision": "0.23.0+cu126",
+      "numpy": "2.2.6",
+      "scikit-learn": "1.6.1",
+      "matplotlib": "3.10.3",
+      "Pillow": "11.2.1"
+    },
+    "deterministic_algorithms": true,
+    "cudnn_benchmark": false,
+    "cpu_threads": 4
+  },
+  "models": {
+    "mnist": {
+      "device": "cuda",
+      "parameters": 435754,
+      "batch_size": 128,
+      "median_step_seconds": 0.01869429999987915,
+      "timed_steps": 5,
+      "compute_only_epoch_minutes": 0.13148324333248335,
+      "compute_only_full_schedule_hours": 0.0876554955549889,
+      "peak_allocated_mib": 200.30419921875,
+      "peak_reserved_mib": 396.0,
+      "telemetry": {
+        "sample_interval_seconds": 5.0,
+        "sample_count": 1,
+        "temperature_stop_c": 85,
+        "memory_stop_fraction": 0.95,
+        "peak_temperature_c": 56.0,
+        "peak_device_memory_used_mib": 101.0
+      },
+      "note": "Synthetic compute estimate only; excludes augmentation, loading, validation, diagnostics, checkpoint I/O and sustained clock variation."
+    },
+    "cifar10": {
+      "device": "cuda",
+      "parameters": 5849050,
+      "batch_size": 64,
+      "median_step_seconds": 0.1263969999999972,
+      "timed_steps": 5,
+      "compute_only_epoch_minutes": 1.4830581333333006,
+      "compute_only_full_schedule_hours": 4.943527111111002,
+      "peak_allocated_mib": 738.47412109375,
+      "peak_reserved_mib": 772.0,
+      "telemetry": {
+        "sample_interval_seconds": 5.0,
+        "sample_count": 1,
+        "temperature_stop_c": 85,
+        "memory_stop_fraction": 0.95,
+        "peak_temperature_c": 57.0,
+        "peak_device_memory_used_mib": 173.0
+      },
+      "note": "Synthetic compute estimate only; excludes augmentation, loading, validation, diagnostics, checkpoint I/O and sustained clock variation."
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "technical_submission_ready": true,
+  "executed_code_cells": 22,
+  "embedded_assets_verified": 27,
+  "notebook_error_outputs": 0,
+  "displayed_report_figures_match_saved_pngs": 9,
+  "cpu_without_datasets_or_retraining": true,
+  "both_upload_callbacks_verified": true,
+  "real_gradcam_cpu_verified": true,
+  "test_metrics_and_figures_audited": true,
+  "no_datasets_or_standalone_weights_tracked_by_git": true,
+  "personal_details_pending": true
+}
