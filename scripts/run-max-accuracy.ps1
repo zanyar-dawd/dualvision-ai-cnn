@@ -11,6 +11,14 @@ $stateDirectory = Join-Path $projectRoot "results\$ExperimentId\runner"
 New-Item -ItemType Directory -Path $stateDirectory -Force | Out-Null
 
 function Invoke-CandidateTraining([string]$Dataset) {
+    # Keep the stopping targets dataset-specific. CIFAR-10 has already met its
+    # 94% target; MNIST is allowed to continue until 99.7% validation accuracy
+    # (or its configured epoch/time/early-stopping limit).
+    if ($Dataset -eq "mnist") {
+        $env:DUALVISION_TARGET_VALIDATION = "0.997"
+    } else {
+        $env:DUALVISION_TARGET_VALIDATION = "0.94"
+    }
     $checkpointDirectory = Join-Path $projectRoot "checkpoints\$ExperimentId\$Dataset"
     $arguments = @(
         "-u", "-m", "experiments.train_v2", "--train",

@@ -24,9 +24,11 @@ def main():
     displayed_pngs = {hashlib.sha256(base64.b64decode(output['data']['image/png'])).hexdigest()
                      for cell in code for output in cell.outputs
                      if 'image/png' in output.get('data', {})}
+    selected = {'mnist': 'accuracy-mnist-997-20261017',
+                'cifar10': 'accuracy-max-20261017'}
     expected_pngs = {hashlib.sha256(path.read_bytes()).hexdigest()
                     for name in ['mnist', 'cifar10']
-                    for path in (root / 'results/baseline' / name).glob('*.png')}
+                    for path in (root / 'results' / selected[name] / name).glob('*.png')}
     assert expected_pngs <= displayed_pngs, 'Notebook plots must match the saved measured figures exactly.'
     assert not any('from src.' in cell.source or 'import src' in cell.source for cell in code)
     assignments = {}

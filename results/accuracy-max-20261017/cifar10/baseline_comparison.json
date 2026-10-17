@@ -1,0 +1,22 @@
+[
+  {
+    "model": "historical baseline",
+    "architecture": "baseline custom CNN",
+    "parameters": 696618,
+    "best_validation_accuracy": 0.9162,
+    "test_accuracy": 0.9092,
+    "test_loss": 0.3988180894613266,
+    "macro_f1": 0.9092036896178218,
+    "training_seconds": 3285.7719838
+  },
+  {
+    "model": "validation-selected candidate",
+    "architecture": "visionnet-wrn28-4-v2",
+    "parameters": 5849050,
+    "best_validation_accuracy": 0.9412,
+    "test_accuracy": 0.9332,
+    "test_loss": 0.20026192960739136,
+    "macro_f1": 0.9332764468756418,
+    "training_seconds": 26827.089779200003
+  }
+]

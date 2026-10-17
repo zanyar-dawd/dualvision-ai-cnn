@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 import math
+import os
 import random
 import time
 from pathlib import Path
@@ -33,6 +34,19 @@ CANDIDATE_VERSION = 'accuracy-v2.1'
 
 def recipe_signature(config):
     return hashlib.sha256(json.dumps({'version': CANDIDATE_VERSION, 'config': config}, sort_keys=True).encode()).hexdigest()
+
+
+def validation_target(config):
+    """Return a frozen config target, with the environment variable kept for legacy runs."""
+    value = config.get('target_validation_accuracy')
+    if value is None:
+        value = os.environ.get('DUALVISION_TARGET_VALIDATION', '')
+    if value in (None, ''):
+        return None
+    target = float(value)
+    if not 0.0 < target <= 1.0:
+        raise ValueError('Target validation accuracy must be between 0 and 1.')
+    return target
 
 
 def candidate_optimizer(model, config):
@@ -152,6 +166,17 @@ def fit_candidate(model, bundle, device, config, folder, metadata, resume=False)
         prior += 5.0  # budget allowance for any work after the last telemetry sample
         restore_rng(state['rng'], bundle.train, device)
         assert state['scheduler']['next_epoch'] == len(history) + 1
+        target_accuracy = validation_target(config)
+        if target_accuracy is not None and history and max(row['validation_accuracy'] for row in history) >= target_accuracy:
+            model.load_state_dict(best_state)
+            metadata = {**metadata, 'training_status': 'complete', 'test_status': 'not_evaluated',
+                        'best_epoch': best_epoch, 'best_validation_accuracy': best_key[0],
+                        'history': history, 'stop_reason': f'target_validation_accuracy_{target_accuracy:.4f}',
+                        'training_seconds': prior, 'telemetry': None,
+                        'training_accuracy_kind': 'mixed-label weighted agreement in train mode; clean_train is unmixed evaluation-mode accuracy',
+                        'overfitting_claim': 'No guarantee of absent overfitting; inspect clean train/validation curves and final generalization.'}
+            save_checkpoint(folder / 'best.pt', model, metadata)
+            return metadata
     if prior >= config['max_minutes'] * 60:
         raise RuntimeError('No training budget remains; do not silently reset the budget.')
     started = time.perf_counter()
@@ -197,6 +222,11 @@ def fit_candidate(model, bundle, device, config, folder, metadata, resume=False)
         write_json(folder / 'history.json', history)
         print(f"Epoch {epoch:03d}/{config['epochs']} | clean train {clean['accuracy']:.2%} | "
               f"validation {validation['accuracy']:.2%} | gap {row['clean_accuracy_gap']:.2%} | {row['seconds']:.1f}s", flush=True)
+        target_accuracy = validation_target(config)
+        if target_accuracy is not None:
+            if row['validation_accuracy'] >= target_accuracy:
+                stop_reason = f'target_validation_accuracy_{target_accuracy:.4f}'
+                break
         if epoch >= config['minimum_epochs'] and bad_epochs >= config['patience']:
             stop_reason = 'early_stopping'
             break

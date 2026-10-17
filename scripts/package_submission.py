@@ -12,9 +12,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     assets = {}
+    selected_experiments = {
+        'mnist': 'accuracy-mnist-997-20261017',
+        'cifar10': 'accuracy-max-20261017',
+    }
     for name in ['mnist', 'cifar10']:
-        checkpoint = ROOT / 'checkpoints' / 'baseline' / name / 'best.pt'
-        output = ROOT / 'results' / 'baseline' / name
+        experiment_id = selected_experiments[name]
+        checkpoint = ROOT / 'checkpoints' / experiment_id / name / 'best.pt'
+        output = ROOT / 'results' / experiment_id / name
         training = json.loads((output / 'training.json').read_text(encoding='utf-8'))
         evaluation = json.loads((output / 'evaluation.json').read_text(encoding='utf-8'))
         assert training['training_status'] == 'complete' and not training['smoke']
@@ -43,7 +48,7 @@ def main():
     assert len(asset_cells) == 1
     asset_cells[0].source = ('# Compact trained checkpoints and measured report assets; SHA-256 verified on restore.\n'
                              f'SUBMISSION_ARCHIVE_B64 = {encoded!r}\n'
-                             'if SUBMISSION_ARCHIVE_B64 and not SMOKE_TEST and EXPERIMENT_ID == "baseline":\n'
+                             'if SUBMISSION_ARCHIVE_B64 and not SMOKE_TEST:\n'
                              '    restore_submission_assets(SUBMISSION_ARCHIVE_B64, PROJECT_ROOT)\n')
     asset_cells[0].metadata.update({'jupyter': {'source_hidden': True}, 'tags': ['embedded-artifacts']})
     nbformat.validate(notebook)

@@ -1,0 +1,7 @@
+{
+  "recipe_sha256": "045b39fa1350744dd8622e206028a9174e40179fee3929e181b81af972afb097",
+  "checkpoint_sha256": "8d7bbb8c4a464114308bffd8d2ea4e1d72479f81d0bc3a217f77b0895f6ae19c",
+  "test_accuracy": 0.9332,
+  "baseline_benchmark_previously_seen": true,
+  "no_absence_of_overfitting_guarantee": true
+}

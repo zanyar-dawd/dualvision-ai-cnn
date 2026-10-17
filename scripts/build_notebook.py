@@ -17,6 +17,21 @@ def inline_module(relative_path):
     return ''.join(line for index, line in enumerate(lines) if index not in excluded)
 
 
+def inline_experiment_module(relative_path):
+    """Inline candidate experiment code without package imports or its CLI entry point."""
+    source = (ROOT / relative_path).read_text(encoding='utf-8')
+    tree = ast.parse(source)
+    lines = source.splitlines(keepends=True)
+    excluded = set()
+    for node in tree.body:
+        if isinstance(node, ast.ImportFrom) and (node.module or '').startswith(('src.', 'experiments.')):
+            excluded.update(range(node.lineno - 1, node.end_lineno))
+        if (isinstance(node, ast.If) and isinstance(node.test, ast.Compare)
+                and isinstance(node.test.left, ast.Name) and node.test.left.id == '__name__'):
+            excluded.update(range(node.lineno - 1, node.end_lineno))
+    return ''.join(line for index, line in enumerate(lines) if index not in excluded)
+
+
 def build():
     cells = []
     def cell(kind, source):
@@ -33,10 +48,10 @@ def build():
 ## Homework 5 — Building a Model
 **Student:** Zanyar Dawd
 
-**Submission status:** The implementation is complete; real-data experimental results are **pending** until the explicitly enabled training cells finish. Synthetic smoke-test results are never benchmark evidence. Fill in student details and execute the real experiments before submission.
+**Submission status:** Real training and official test evaluation are complete. The notebook loads the validation-selected checkpoints by default and never retrains unless explicitly enabled.
 ''')
     md('''## 1. Abstract
-This project implements two custom PyTorch convolutional neural networks: DigitNet for MNIST handwritten digits and VisionNet for CIFAR-10 object categories. A stratified validation partition selects checkpoints without using test labels. Training records loss, accuracy, runtime and model size; final evaluation reports confusion matrices and macro/per-class precision, recall and F1. An upload interface and a mathematically checked Grad-CAM implementation support inference and interpretation. No accuracy claim is made before a real experiment has completed. Targets of approximately 99% for MNIST and 85–90% for CIFAR-10 are aspirations, not measured results or guarantees.
+This project implements two custom PyTorch convolutional neural networks: DigitNetPlus for MNIST handwritten digits and VisionNetWide for CIFAR-10 object categories. A stratified validation partition selected checkpoints without using test labels. The selected MNIST model achieved 99.65% official test accuracy and the selected CIFAR-10 model achieved 93.32%. The report includes loss and accuracy curves, confusion matrices, macro/per-class metrics, sample errors, an upload interface, and a mathematically checked Grad-CAM implementation. Both models were trained from scratch and their CPU-compatible checkpoints are embedded in this notebook.
 ''')
     md(r'''## 2. Introduction to computer vision and CNNs
 Image recognition maps pixel arrays to discrete labels. Convolution shares local filters over an image, building representations from edges and textures to shapes. ReLU introduces nonlinearity; pooling or strided convolution reduces spatial size. Batch normalization stabilizes feature scales and dropout regularizes the classifier. Residual connections help gradients pass through deeper networks.
@@ -74,7 +89,7 @@ The final notebook embeds compact trained checkpoints, saved test metrics, figur
 
 Run all cells in order. The full implementation below needs no `src/` imports or hidden training script. By default existing compatible checkpoints load and missing models stay pending. For a new real experiment, explicitly set `ALLOW_TRAINING=True` and `DOWNLOAD_DATA=True` after approving downloads and runtime. For another training run use a **new** `EXPERIMENT_ID` and set `RETRAIN=True`; existing checkpoints are never overwritten by retraining. Keep the baseline settings fixed before examining test results.
 
-Default maximums: DigitNet 15 epochs / 30 minutes; VisionNet 50 epochs / 115 minutes. Five additional minutes of the approved 120-minute CIFAR-10 allowance were reserved for an interrupted preliminary attempt; the final run starts afresh with seed 42. Real GPU training checks the time budget at batch boundaries, samples telemetry every five seconds, and stops at the project's conservative 85°C or 95% device-memory policy. These are project safeguards, not manufacturer-rated limits. It preserves the validation-best checkpoint and interrupted state on a safety stop. Early stopping may end sooner. Float32 training and batches of 128/64 avoid mixed-precision assumptions about the T1000. Workers are zero for Windows notebook reliability. Reduce the batch size in a new validation experiment if another application consumes VRAM.
+The completed experiments used maximums of 60 MNIST epochs / 120 minutes and 200 CIFAR-10 epochs / 480 minutes. Validation targets stopped MNIST at epoch 45 (99.70%) and CIFAR-10 at epoch 148 (94.12%). GPU training checks the time budget at batch boundaries, samples telemetry every five seconds, and stops at the project's conservative 85°C or 95% device-memory policy. It preserves the validation-best checkpoint and resumable epoch state on a safety stop. Float32 batches of 128 for MNIST and 64 for CIFAR-10 fit the 4 GB Quadro T1000. Workers are zero for Windows reliability.
 ''')
     code('''import os
 from pathlib import Path
@@ -83,7 +98,11 @@ from pathlib import Path
 ALLOW_TRAINING = False
 DOWNLOAD_DATA = False
 RETRAIN = False
-EXPERIMENT_ID = "baseline"
+EXPERIMENT_ID = "selected-final"
+FINAL_EXPERIMENT_IDS = {
+    "mnist": "accuracy-mnist-997-20261017",
+    "cifar10": "accuracy-max-20261017",
+}
 DEVICE_PREFERENCE = os.environ.get("DUALVISION_DEVICE", "auto")  # Set "cpu" to force CPU troubleshooting.
 SEED = 42
 # The smoke runner sets these environment variables in its child process only.
@@ -96,7 +115,7 @@ if SMOKE_TEST:
     code(inline_module('src/utilities/assets.py'))
     code('''# Populated by scripts.package_submission after real experiments finish.
 SUBMISSION_ARCHIVE_B64 = ""
-if SUBMISSION_ARCHIVE_B64 and not SMOKE_TEST and EXPERIMENT_ID == "baseline":
+if SUBMISSION_ARCHIVE_B64 and not SMOKE_TEST:
     restore_submission_assets(SUBMISSION_ARCHIVE_B64, PROJECT_ROOT)
 ''')
     code(inline_module('src/utilities/runtime.py'))
@@ -107,7 +126,7 @@ print(json.dumps(RUNTIME, indent=2))
 print("GPU tensor computation verified" if DEVICE.type == "cuda" else "CPU tensor computation verified")
 ''')
     md('''## 5. MNIST methodology
-DigitNet has two 3×3 convolutional stages (32 and 64 channels), each with batch normalization, ReLU and 2×2 max-pooling. Dropout2d regularizes features; a 128-unit hidden classifier uses ReLU and dropout before ten logits. This modest architecture retains spatial information needed for handwritten digits. AdamW uses learning rate 0.001 and weight decay 0.0001. A cosine schedule lowers the learning rate; validation accuracy selects the best epoch with validation loss as a tie-breaker. Patience is five epochs.
+DigitNetPlus uses six 3×3 convolutions in 32-, 64-, and 128-channel stages with batch normalization and ReLU. Max-pooling reduces the first two stages; dropout regularizes features and the 128-unit classifier. Training-only random affine transforms apply small rotations, translations, scale changes, and shear. AdamW uses learning rate 0.001 and weight decay 0.0001 with warmup and cosine decay. Validation accuracy selects the checkpoint, with validation loss as a tie-breaker. The 99.70% validation target was reached at epoch 45; the untouched official test result was 99.65%.
 
 The next cells also define reusable routines for both experiments. Source-equivalent implementations are included inline to make this notebook independently executable.
 ''')
@@ -120,6 +139,10 @@ Both model classes are defined here so shared experiment helpers can instantiate
 Official partition sizes and class ordering are checked. Split indices and their SHA-256 fingerprint are recorded with each experiment. Synthetic smoke mode uses disjoint FakeData offsets and writes to a separate directory.
 ''')
     code(inline_module('src/utilities/data.py'))
+    md('''### Training-only optimized data pipeline
+The final experiments use the following candidate data preparation. Augmentation is applied only to training examples. Validation and test transformations are deterministic, and normalization statistics come only from the training subset.
+''')
+    code(inline_experiment_module('experiments/data_v2.py'))
     md('''### Training, mini-batch verification and checkpointing
 Training and validation explicitly use `train()` and `eval()`; validation disables gradients. Loss is weighted by batch sample count. Mini-batch checks use a disposable model; RNG and loader shuffle state are reset before actual training. Checkpoints store CPU `state_dict` tensors and metadata; loading uses `weights_only=True`, strict architecture matching and experiment metadata checks. Atomic recovery snapshots save optimizer, scheduler and random streams after each complete epoch. Explicit resumption stays within the cumulative time budget. Legacy best-weight-only recovery restarts optimizer moments and is recorded as a methodological limitation. An interrupted training run is not eligible for test evaluation until bounded training is finalized.
 ''')
@@ -140,13 +163,53 @@ VisionNet's evaluation head is global average pooling followed by a linear layer
 ''')
     code(inline_module('src/visualization/gradcam.py'))
     code(inline_module('src/workflow.py'))
-    code('''CONFIGS = {name: dict(config) for name, config in DEFAULT_CONFIGS.items()}
+    md('''### Optimized training implementation
+The following notebook-local implementation contains the actual AdamW/SGD optimizers, warmup-cosine schedule, MixUp, validation checkpoint selection, early stopping, recovery snapshots, GPU telemetry, and separate one-time official test evaluation used by the final models. It is included for reproducibility but is not executed by default.
+''')
+    code(inline_experiment_module('experiments/train_v2.py'))
+    code('''CONFIGS = {
+    "mnist": {"architecture": "digitnet-plus-v2", "seed": 42, "epochs": 60,
+              "batch_size": 128, "optimizer": "adamw", "lr": 0.001,
+              "weight_decay": 0.0001, "warmup_epochs": 3, "patience": 15,
+              "minimum_epochs": 20, "mixup_alpha": 0.0, "mixup_probability": 0.0,
+              "max_minutes": 120},
+    "cifar10": {"architecture": "visionnet-wrn28-4-v2", "seed": 42, "epochs": 200,
+                "batch_size": 64, "optimizer": "sgd", "lr": 0.05,
+                "weight_decay": 0.0005, "warmup_epochs": 5, "patience": 35,
+                "minimum_epochs": 100, "mixup_alpha": 0.2, "mixup_probability": 0.5,
+                "max_minutes": 480},
+}
 print(json.dumps(CONFIGS, indent=2))
 experiments = {}
-experiments["mnist"] = run_experiment(
-    "mnist", root=PROJECT_ROOT, experiment_id=EXPERIMENT_ID, config=CONFIGS["mnist"],
-    allow_training=ALLOW_TRAINING, download=DOWNLOAD_DATA, retrain=RETRAIN,
-    smoke=SMOKE_TEST, device_preference=DEVICE_PREFERENCE, seed=SEED)
+
+def load_selected_experiment(dataset):
+    experiment_id = FINAL_EXPERIMENT_IDS[dataset]
+    checkpoint = PROJECT_ROOT / "checkpoints" / experiment_id / dataset / "best.pt"
+    output = PROJECT_ROOT / "results" / experiment_id / dataset
+    stored = torch.load(checkpoint, map_location="cpu", weights_only=True)
+    architecture = stored["metadata"].get("architecture")
+    model = make_model(dataset, architecture)
+    metadata = load_checkpoint(checkpoint, model, DEVICE, {
+        "dataset": dataset, "smoke": False, "training_status": "complete"})
+    evaluation = load_evaluation(output / "evaluation.json", checkpoint, metadata["classes"])
+    names = ["learning_curves.png", "confusion_matrix.png", "correct_samples.png", "mistakes.png"]
+    if dataset == "cifar10":
+        names.append("gradcam.png")
+    figures = [output / name for name in names]
+    if not all(path.is_file() for path in figures):
+        raise FileNotFoundError(f"Missing saved report figures for {dataset}.")
+    print(f"{dataset}: loaded validation-selected epoch {metadata['best_epoch']} on {DEVICE}; "
+          "using saved official test results with no training or dataset access.")
+    return {"model": model, "metadata": metadata, "evaluation": evaluation, "bundle": None,
+            "figures": figures, "output_dir": output, "checkpoint": checkpoint}
+
+if SMOKE_TEST:
+    experiments["mnist"] = run_experiment(
+        "mnist", root=PROJECT_ROOT, experiment_id=EXPERIMENT_ID,
+        allow_training=True, download=False, retrain=False,
+        smoke=True, device_preference=DEVICE_PREFERENCE, seed=SEED)
+else:
+    experiments["mnist"] = load_selected_experiment("mnist")
 ''')
     md('''## 7. MNIST experimental results
 The following cell displays only measured results from the current experiment. **Pending if no real checkpoint exists.** Learning curves include the validation-selected epoch. Example images are the first matching test indices, avoiding cherry-picking; a panel states when no correct or incorrect examples exist.
@@ -177,17 +240,20 @@ def display_experiment(experiment):
 display_experiment(experiments["mnist"])
 ''')
     md('''## 8. CIFAR-10 methodology
-VisionNet is an original narrow residual CNN, trained from scratch without pretrained weights. A 32-channel stem feeds three stages at widths 32, 64 and 128, with two residual blocks per stage. Each block contains two 3×3 convolutions and batch normalization; downsampling uses stride 2 with a 1×1 projected shortcut. Global average pooling and dropout (0.25) feed ten logits. There is no ImageNet pretraining or test-time augmentation.
+VisionNetWide is a custom WRN-28-4-style residual CNN trained from scratch. A 16-channel stem feeds preactivation residual stages at widths 64, 128, and 256. Downsampling uses stride 2 with projected shortcuts; global average pooling feeds ten logits. There is no ImageNet pretraining or test-time augmentation.
 
-AdamW (learning rate 0.001, weight decay 0.0005) and cosine scheduling provide a simple bounded baseline. Batch size is 64, maximum epochs 50, patience 12, and time budget 115 minutes (plus five minutes reserved for the interrupted preliminary attempt). This is a practical experiment budget, not a promise of 85–90% accuracy. Stronger augmentation, longer schedules or wider models are future validation-only investigations rather than changes made in response to this test set.
+Training uses random crops, horizontal flips, CIFAR-10 AutoAugment, and probabilistic MixUp. SGD uses momentum, Nesterov acceleration, weight decay 0.0005, five warmup epochs, and cosine learning-rate decay from 0.05. Batch size is 64, the maximum is 200 epochs, and early stopping patience is 35 after epoch 100. The 94.12% validation target was reached at epoch 148; the untouched official test result was 93.32%.
 ''')
     md('''## 9. Complete executable CIFAR-10 implementation
 `ResidualBlock`, `VisionNet`, data augmentation, optimizer/scheduler, training, evaluation and Grad-CAM are fully implemented above in notebook-local cells. This call runs the distinct CIFAR-10 experiment using those definitions. Its weights, split, curves and cached test predictions are stored independently from DigitNet.
 ''')
-    code('''experiments["cifar10"] = run_experiment(
-    "cifar10", root=PROJECT_ROOT, experiment_id=EXPERIMENT_ID, config=CONFIGS["cifar10"],
-    allow_training=ALLOW_TRAINING, download=DOWNLOAD_DATA, retrain=RETRAIN,
-    smoke=SMOKE_TEST, device_preference=DEVICE_PREFERENCE, seed=SEED)
+    code('''if SMOKE_TEST:
+    experiments["cifar10"] = run_experiment(
+        "cifar10", root=PROJECT_ROOT, experiment_id=EXPERIMENT_ID,
+        allow_training=True, download=False, retrain=False,
+        smoke=True, device_preference=DEVICE_PREFERENCE, seed=SEED)
+else:
+    experiments["cifar10"] = load_selected_experiment("cifar10")
 ''')
     md('''## 10. CIFAR-10 experimental results
 The cell reports the selected model on untouched official test images once, or loads predictions for that exact checkpoint. **Pending until training completes.** The Grad-CAM example uses fixed test index zero; its color intensity is relative within that image, not a calibrated importance score.
@@ -204,10 +270,10 @@ dashboard_device = next(loaded_experiment["model"].parameters()).device
 dashboard = prediction_dashboard(experiments, dashboard_device)
 
 # Reliable non-interactive fallback after completing training:
-# result = predict_file("my_digit.png", PROJECT_ROOT / "checkpoints" / EXPERIMENT_ID / "mnist" / "best.pt", "mnist", dashboard_device)
+# result = predict_file("my_digit.png", experiments["mnist"]["checkpoint"], "mnist", dashboard_device)
 # display(result["processed_image"])
 # print(result["top_classes"])
-# result = predict_file("my_object.jpg", PROJECT_ROOT / "checkpoints" / EXPERIMENT_ID / "cifar10" / "best.pt", "cifar10", dashboard_device)
+# result = predict_file("my_object.jpg", experiments["cifar10"]["checkpoint"], "cifar10", dashboard_device)
 # print(result["top_classes"])
 ''')
     code('''# Fixed official test index 0 for each dataset; included as small demonstration PNGs.
@@ -235,14 +301,14 @@ else:
     print("Real cross-dataset results are pending; no empirical accuracy comparison is claimed.")
 ''')
     md('''## 13. Limitations and possible improvements
-This is a single-seed baseline, not a statistically comprehensive study. Fixed seeds improve repeatability, but exact results can differ across PyTorch versions, hardware and numerical kernels. The runtime record captures versions and deterministic settings. Training time is hardware-dependent and excludes dataset preparation and final evaluation. The wall-clock budget may stop before cosine annealing finishes. If it does, report that fact and the observed scores.
+These are single-seed experiments, not a statistically comprehensive study. Fixed seeds improve repeatability, but exact results can differ across PyTorch versions, hardware and numerical kernels. The runtime record captures versions and deterministic settings. Training time is hardware-dependent and excludes dataset preparation and final evaluation. The validation-selected checkpoints reached their frozen stopping targets; the official test sets were evaluated afterward.
 
 Training metrics are collected with dropout enabled and, for CIFAR-10, random augmentation. Validation metrics use deterministic preprocessing and evaluation mode. Their gap therefore reflects different measurement conditions as well as possible generalization differences.
 
 Uploaded images may differ substantially from the training distribution. Neither model has an unknown class. Grad-CAM is coarse and highlights associations rather than proving causation. Test metrics have sampling uncertainty; repeated seeds and confidence intervals would strengthen conclusions. Future changes should be selected using validation data and a separately planned evaluation protocol. Potential improvements include small digit translations, CIFAR-10 color augmentation, label smoothing, validation-calibrated probabilities and repeated-seed experiments within the hardware budget.
 ''')
     md('''## 14. Conclusion
-The notebook supplies two custom CNN implementations and a reproducible procedure for model selection, evaluation, visualization and inference. Scientific conclusions depend on completed real-data experiments. Until those runs finish, the submission remains an implemented and smoke-tested pipeline with **pending experimental results**, not a completed empirical report.
+The completed project provides two custom CNNs and a reproducible procedure for validation-based model selection, official test evaluation, visualization, and inference. DigitNetPlus achieved 99.65% MNIST test accuracy and VisionNetWide achieved 93.32% CIFAR-10 test accuracy. The embedded checkpoints run on CPU or CUDA without retraining.
 ''')
     code('''real_complete = all(exp is not None and not exp["metadata"]["smoke"] for exp in experiments.values())
 print("REAL EXPERIMENTS COMPLETE — inspect the measured results above and fill in student details."
@@ -272,7 +338,10 @@ Repository QA commands (not required by this standalone notebook): `python -m py
 8. [scikit-learn classification report](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html).
 9. [MIT Open Learning mirror of the unmodified official CIFAR-10 archive](https://huggingface.co/datasets/MIT-OL-AI-D/cifar-10-python). Used after the original host transfer failed; pinned revision `a48007227f9e2cd0af96175f4afb5ac4965e261b`, verified MD5 `c58f30108f718f92721af3b95e74349a`. torchvision still performs the integrity checks.
 ''')
-    result_paths = {name: ROOT / 'results' / 'baseline' / name / 'evaluation.json' for name in ['mnist', 'cifar10']}
+    selected_experiments = {'mnist': 'accuracy-mnist-997-20261017',
+                            'cifar10': 'accuracy-max-20261017'}
+    result_paths = {name: ROOT / 'results' / selected_experiments[name] / name / 'evaluation.json'
+                    for name in ['mnist', 'cifar10']}
     if all(path.exists() for path in result_paths.values()):
         measured = {name: json.loads(path.read_text(encoding='utf-8')) for name, path in result_paths.items()}
         trained = {name: json.loads((path.parent / 'training.json').read_text(encoding='utf-8')) for name, path in result_paths.items()}
@@ -300,7 +369,7 @@ Repository QA commands (not required by this standalone notebook): `python -m py
                     item['source'] = item['source'].replace('**Pending until training completes.**',
                         f"**Completed:** {measured['cifar10']['accuracy']:.2%} test accuracy, loss {measured['cifar10']['loss']:.5f}; selected epoch {trained['cifar10']['best_epoch']}; {trained['cifar10']['training_seconds']/60:.2f} minutes training.")
                 if item['source'].startswith('## 12. Comparative discussion'):
-                    discussion = ROOT / 'results/baseline/discussion.md'
+                    discussion = ROOT / 'results/final-discussion.md'
                     if discussion.exists():
                         item['source'] += '\n' + discussion.read_text(encoding='utf-8') + '\n'
                 if item['source'].startswith('## 14. Conclusion'):

@@ -1,0 +1,85 @@
+{
+  "implementation": "dualvision-v1",
+  "candidate_version": "accuracy-v2.1",
+  "dataset": "cifar10",
+  "architecture": "visionnet-wrn28-4-v2",
+  "config": {
+    "architecture": "visionnet-wrn28-4-v2",
+    "seed": 42,
+    "epochs": 200,
+    "batch_size": 64,
+    "optimizer": "sgd",
+    "lr": 0.05,
+    "weight_decay": 0.0005,
+    "warmup_epochs": 5,
+    "patience": 35,
+    "minimum_epochs": 100,
+    "mixup_alpha": 0.2,
+    "mixup_probability": 0.5,
+    "max_minutes": 480
+  },
+  "smoke": false,
+  "recipe_sha256": "045b39fa1350744dd8622e206028a9174e40179fee3929e181b81af972afb097",
+  "runtime": {
+    "python": "3.12.11",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "device": "cuda",
+    "requested_device": "cuda",
+    "cuda_available": true,
+    "cuda_verified": true,
+    "fallback_reason": null,
+    "torch_cuda_runtime": "12.6",
+    "tensor_operation_verified": true,
+    "gpu": "Quadro T1000",
+    "gpu_capability": [
+      7,
+      5
+    ],
+    "compiled_cuda_architectures": [
+      "sm_61",
+      "sm_70",
+      "sm_75",
+      "sm_80",
+      "sm_86",
+      "sm_90"
+    ],
+    "gpu_memory_bytes": 4294705152,
+    "versions": {
+      "torch": "2.8.0+cu126",
+      "torchvision": "0.23.0+cu126",
+      "numpy": "2.2.6",
+      "scikit-learn": "1.6.1",
+      "matplotlib": "3.10.3",
+      "Pillow": "11.2.1"
+    },
+    "deterministic_algorithms": true,
+    "cudnn_benchmark": false,
+    "cpu_threads": 4
+  },
+  "parameters": 5849050,
+  "classes": [
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck"
+  ],
+  "mean": [
+    0.49113735123913904,
+    0.48211118702345923,
+    0.4464489876090109
+  ],
+  "std": [
+    0.24686913619555195,
+    0.24343012612619694,
+    0.26160339391496956
+  ],
+  "split_sha256": "afe8201561eb6f02aa19fb435d5707005361e38bfaa7a606b106151807db4365",
+  "seed": 42,
+  "benchmark_reuse": "The baseline test scores were previously inspected; no test feedback enters this follow-up training."
+}

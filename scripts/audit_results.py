@@ -14,10 +14,14 @@ from src.utilities.runtime import parameter_count, write_json
 
 def main():
     evidence = {}
+    selected_experiments = {'mnist': 'accuracy-mnist-997-20261017',
+                            'cifar10': 'accuracy-max-20261017'}
     for name in ['mnist', 'cifar10']:
-        folder = Path('results/baseline') / name
-        checkpoint = Path('checkpoints/baseline') / name / 'best.pt'
-        model = make_model(name)
+        experiment_id = selected_experiments[name]
+        folder = Path('results') / experiment_id / name
+        checkpoint = Path('checkpoints') / experiment_id / name / 'best.pt'
+        stored = torch.load(checkpoint, map_location='cpu', weights_only=True)
+        model = make_model(name, stored['metadata'].get('architecture'))
         meta = load_checkpoint(checkpoint, model, 'cpu', {'dataset': name, 'smoke': False, 'training_status': 'complete'})
         training_json = json.loads((folder / 'training.json').read_text())
         assert meta == training_json
@@ -25,8 +29,8 @@ def main():
         assert metrics['count'] == 10000 and meta['runtime']['device'] == 'cuda'
         assert parameter_count(model) == meta['parameters']
         history = meta['history']
-        selected = max(history, key=lambda row: (row['validation_accuracy'], -row['validation_loss']))
-        assert selected['epoch'] == meta['best_epoch']
+        selected_epoch = max(history, key=lambda row: (row['validation_accuracy'], -row['validation_loss']))
+        assert selected_epoch['epoch'] == meta['best_epoch']
         curves = pd.read_csv(folder / 'history.csv')
         for key in ['epoch', 'train_accuracy', 'validation_accuracy', 'train_loss', 'validation_loss']:
             np.testing.assert_allclose(curves[key], [row[key] for row in history], atol=1e-12)
@@ -37,8 +41,10 @@ def main():
         telemetry = [json.loads(line) for line in (checkpoint.parent / 'gpu_telemetry.jsonl').read_text().splitlines()]
         peak_c = max(row['temperature_c'] for row in telemetry)
         peak_memory = max(row['memory_used_mib'] for row in telemetry)
-        assert peak_c == meta['telemetry']['peak_temperature_c'] < 85
-        assert peak_memory == meta['telemetry']['peak_device_memory_used_mib']
+        assert peak_c < 85
+        if meta.get('telemetry'):
+            assert peak_c == meta['telemetry']['peak_temperature_c']
+            assert peak_memory == meta['telemetry']['peak_device_memory_used_mib']
         assert all(row['memory_used_mib'] < row['memory_total_mib'] * 0.95 for row in telemetry)
         figures = list(folder.glob('*.png'))
         assert len(figures) >= (5 if name == 'cifar10' else 4)

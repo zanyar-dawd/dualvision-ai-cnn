@@ -1,0 +1,18 @@
+{
+  "baseline_comparison.csv": "981324f84fc847454eb461217ebc35b17705755397e8d4874c9e0b3b7c128360",
+  "baseline_comparison.json": "473210463aad820343d53d7f0e87e0c2c9cb5be66215f8399d1a7da6c35f2ca5",
+  "confusion_matrix.png": "8a468360acaecfdddbe00ebcfa1e594ca1404b30c2e53426b3bb7494788cecd8",
+  "correct_samples.png": "15b6bebbc34768f7f273bdbe49786c55216af0eaf90c2f5979e54b33f5bf5105",
+  "evaluation.json": "5bdcf01f65e43ca8a178f3f37d8e257bc6e91714150d08d60befa2768df25ee7",
+  "finalization.json": "5461d5209cbcdc96fc34a2734625fa04bf2b319f0bfdf961b68491236c5ddc43",
+  "final_evaluation_record.json": "9c57ede9d64ebfa2bcd581ef9faa7a47779414eb862514ae649129b9fa1fa027",
+  "frozen_recipe.json": "4edc7a4b2d53efa398cbddb42666ab3b43a568780ae378cf7fe93bc470065251",
+  "gradcam.png": "18b7805bb37d473540948db30120608e22b83649ac7741f61714ec2360e84e43",
+  "history.csv": "b40f0a427543028fdce5dfa0f95831c650228597d739ee9d11742740d2408d8b",
+  "learning_curves.png": "fd2fa034317074ca15d5b75e91b731808a35a7faa4ec8a8906f99b68f2c73839",
+  "mistakes.png": "97362773c75c23a73eeb06ee6df736af6347d25c0f1d50b52be97ce829d22cc6",
+  "per_class_metrics.csv": "d52ab4d8bfbb768156cfd9ae6a4748f32a55c4a124f40c75976eb4d52b4f45b4",
+  "selection.json": "fccef847645e6d599e5a75d2b7858987dcc3897d8035e39c8074d28fe2fbfac8",
+  "training.json": "90711a634bc584684252c9429d888997bf3da46c5e5c219b3941f6776de61bc0",
+  "validation_diagnostics.png": "fd2fa034317074ca15d5b75e91b731808a35a7faa4ec8a8906f99b68f2c73839"
+}

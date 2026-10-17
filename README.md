@@ -2,7 +2,7 @@
 
 Homework 5: two custom PyTorch CNNs and a self-contained Jupyter Notebook report.
 
-**Status:** both real experiments are complete: **MNIST 99.25%** and **CIFAR-10 90.92%** held-out test accuracy (10,000 test images each). The notebook contains the measured report, selected weights and inference demonstrations. See [STATUS.md](STATUS.md) for verification evidence and limitations. The student name is filled in and the unrequested information fields have been removed.
+**Status:** both optimized real experiments are complete: **MNIST 99.65%** and **CIFAR-10 93.32%** held-out test accuracy (10,000 test images each). The notebook embeds the validation-selected weights, measured report, figures, Grad-CAM output, and inference demonstrations. See [STATUS.md](STATUS.md) for verification evidence and limitations. The student name is filled in and the unrequested information fields have been removed.
 
 Open **[Homework_5_DualVision.ipynb](Homework_5_DualVision.ipynb)**. It includes the actual architectures, data pipeline, training, checkpointing, evaluation, plots, Grad-CAM, upload interface and image inference code. It does not import repository modules or invoke a hidden training script. The `.ipynb` is the required submission.
 
@@ -99,7 +99,7 @@ Path-based fallback, also defined inline in the notebook:
 
 ```python
 from src.utilities.inference import predict_file
-result = predict_file('digit.png', 'checkpoints/baseline/mnist/best.pt', 'mnist')
+result = predict_file('digit.png', 'checkpoints/accuracy-mnist-997-20261017/mnist/best.pt', 'mnist')
 print(result['top_classes'])
 ```
 
@@ -140,11 +140,11 @@ Recovery after interruption: `python -m scripts.run_experiments --dataset cifar1
 
 ## Measured results
 
-The new request for 99.8% MNIST and 95.5–96% CIFAR-10 is a **pending follow-up experiment**, not an achieved result. Candidate architectures, regularization, full-state recovery and validation diagnostics are implemented in `experiments/`; all 32 tests passed and both full-batch CUDA preflight checks passed. See [ACCURACY_UPGRADE_PLAN.md](ACCURACY_UPGRADE_PLAN.md) for the prepared recipe and proposed additional training caps (45 minutes MNIST, 12 hours CIFAR-10), which await approval. The main notebook still contains the complete, CPU-verified baseline report below. Candidate training is not started automatically.
+The accuracy upgrade is complete. Candidate architectures, augmentation, regularization, full-state recovery, validation diagnostics, and separate final test evaluation are implemented in `experiments/`. The selected models were chosen by validation accuracy and evaluated once on the official test partitions. The notebook loads these checkpoints automatically and never starts training by default.
 
 | Model | Parameters | Test accuracy | Macro precision | Macro recall | Macro F1 | Active training | Selected epoch |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| DigitNet / MNIST | 421,738 | 99.25% | 0.99253 | 0.99243 | 0.99247 | 5 min 21 s | 11 / 15 |
-| VisionNet / CIFAR-10 | 696,618 | 90.92% | 0.90933 | 0.90920 | 0.90920 | about 54 min 46 s | 49 / 50 |
+| DigitNetPlus / MNIST | 435,754 | 99.65% | 0.99651 | 0.99647 | 0.99649 | 24 min 40 s | 45 / 60 |
+| VisionNetWide / CIFAR-10 | 5,849,050 | 93.32% | 0.93426 | 0.93320 | 0.93328 | about 7 h 27 min | 148 / 200 |
 
 CIFAR-10 duration includes logged interrupted work and conservative recovery allowances, but excludes inactive gaps and the discarded initial attempt. Adding its reserved five minutes gives about 59 min 46 s of the approved 120-minute allowance. Neither run triggered a temperature or memory safety stop. These cross-dataset scores measure different tasks, not a controlled architecture ranking.

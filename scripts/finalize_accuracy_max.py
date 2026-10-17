@@ -84,11 +84,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--experiment-id", required=True)
     parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument(
+        "--dataset",
+        choices=("mnist", "cifar10", "both"),
+        default="both",
+        help="Finalize one dataset or both (default: both).",
+    )
     args = parser.parse_args()
     configs = json.loads(args.config.read_text(encoding="utf-8"))
+    datasets = ("cifar10", "mnist") if args.dataset == "both" else (args.dataset,)
     result = {
         dataset: finalize(dataset, configs[dataset], args.experiment_id)
-        for dataset in ("cifar10", "mnist")
+        for dataset in datasets
     }
     write_json(Path("results") / args.experiment_id / "selection_summary.json", result)
     print(json.dumps(result, indent=2))

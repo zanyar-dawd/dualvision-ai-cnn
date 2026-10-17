@@ -1,0 +1,27 @@
+{
+  "selection_policy": "validation-selected checkpoints; official test metrics reported once after selection",
+  "training_enabled": false,
+  "mnist": {
+    "experiment_id": "accuracy-mnist-997-20261017",
+    "checkpoint": "checkpoints/accuracy-mnist-997-20261017/mnist/best.pt",
+    "selected_epoch": 45,
+    "validation_accuracy": 0.997,
+    "test_accuracy": 0.9965,
+    "macro_f1": 0.996487687675186,
+    "status": "selected_final"
+  },
+  "cifar10": {
+    "experiment_id": "accuracy-max-20261017",
+    "checkpoint": "checkpoints/accuracy-max-20261017/cifar10/best.pt",
+    "selected_epoch": 148,
+    "validation_accuracy": 0.9412,
+    "test_accuracy": 0.9332,
+    "macro_f1": 0.9333,
+    "status": "selected_final"
+  },
+  "abandoned_experiment": {
+    "experiment_id": "accuracy-mnist-998-20261017",
+    "stopped_after_epoch": 3,
+    "reason": "Stopped at user request; never evaluated on the official test set and not selected."
+  }
+}

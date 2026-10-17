@@ -1,0 +1,11 @@
+{
+  "dataset": "mnist",
+  "selection_basis": "validation_accuracy_then_validation_loss",
+  "baseline_best_validation_accuracy": 0.9925,
+  "candidate_best_validation_accuracy": 0.997,
+  "candidate_best_epoch": 45,
+  "official_test_used_for_selection": false,
+  "historical_baseline_test_was_known": true,
+  "selected": "candidate",
+  "final_test_action": "evaluate_once"
+}

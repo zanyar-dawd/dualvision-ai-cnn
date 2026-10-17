@@ -81,8 +81,11 @@ def predict_image(model, source, metadata: dict, device='auto', polarity='auto')
 def predict_file(path, checkpoint, dataset, device='auto', polarity='auto') -> dict:
     """Non-widget fallback, usable in any Python environment with the dependencies."""
     device, _ = select_device(device)
-    model = make_model(dataset)
-    meta = load_checkpoint(Path(checkpoint), model, device, {'dataset': dataset, 'smoke': False})
+    checkpoint = Path(checkpoint)
+    stored = torch.load(checkpoint, map_location='cpu', weights_only=True)
+    architecture = stored.get('metadata', {}).get('architecture')
+    model = make_model(dataset, architecture)
+    meta = load_checkpoint(checkpoint, model, device, {'dataset': dataset, 'smoke': False})
     return predict_image(model, path, meta, device, polarity)
 
 

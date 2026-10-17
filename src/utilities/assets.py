@@ -19,7 +19,15 @@ def restore_submission_assets(encoded_archive: str, destination: Path) -> None:
             relative = PurePosixPath(name)
             if relative.is_absolute() or '..' in relative.parts or ':' in name or '\\' in name:
                 raise ValueError('Invalid submission asset path.')
-            if not (name.startswith('checkpoints/baseline/') or name.startswith('results/baseline/')):
+            allowed = (
+                'checkpoints/baseline/',
+                'results/baseline/',
+                'checkpoints/accuracy-mnist-997-20261017/',
+                'results/accuracy-mnist-997-20261017/',
+                'checkpoints/accuracy-max-20261017/',
+                'results/accuracy-max-20261017/',
+            )
+            if not name.startswith(allowed):
                 raise ValueError('Submission archive contains an unrelated path.')
             target = destination.joinpath(*relative.parts).resolve()
             if not target.is_relative_to(destination):

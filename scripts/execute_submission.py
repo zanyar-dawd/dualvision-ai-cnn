@@ -1,14 +1,12 @@
 """Execute the final notebook on CPU or CUDA with only embedded assets, no retraining."""
 import argparse
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
 
 import nbformat
-from nbclient import NotebookClient
-from jupyter_client import KernelManager
-from jupyter_client.kernelspec import KernelSpecManager
 
 
 def main():
@@ -17,6 +15,7 @@ def main():
                         help='Expected device; notebook stays in auto mode. CPU hides CUDA.')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
+    print('Verifier: reading notebook...', flush=True)
     notebook = nbformat.read(root / 'Homework_5_DualVision.ipynb', as_version=4)
     original_count = len(notebook.cells)
     notebook.cells.append(nbformat.v4.new_code_cell('''
@@ -54,8 +53,17 @@ print("PASS: both real models, upload callbacks, saved reports and automatic dev
     notebook.cells[-1].source = f'EXPECTED_DEVICE = {args.device!r}\n' + notebook.cells[-1].source
     with tempfile.TemporaryDirectory(prefix=f'dualvision-{args.device}-', dir=root / '.downloads') as temporary:
         sandbox = Path(temporary)
+        print(f'Verifier: isolated folder {sandbox}', flush=True)
         kernel_dir = sandbox / 'kernels' / 'dualvision-cpu'
         kernel_dir.mkdir(parents=True)
+        os.environ['JUPYTER_CONFIG_DIR'] = str(sandbox / 'jupyter-config')
+        os.environ['JUPYTER_DATA_DIR'] = str(sandbox / 'jupyter-data')
+        os.environ['JUPYTER_RUNTIME_DIR'] = str(sandbox / 'jupyter-runtime')
+        os.environ['IPYTHONDIR'] = str(sandbox / 'ipython')
+        from nbclient import NotebookClient
+        from jupyter_client import KernelManager
+        from jupyter_client.kernelspec import KernelSpecManager
+        print('Verifier: Jupyter libraries loaded.', flush=True)
         (kernel_dir / 'kernel.json').write_text(json.dumps({
             'argv': [sys.executable, '-m', 'ipykernel_launcher', '-f', '{connection_file}',
                      '--HistoryManager.hist_file=:memory:'],
@@ -64,6 +72,8 @@ print("PASS: both real models, upload callbacks, saved reports and automatic dev
                     'DUALVISION_ROOT': str(sandbox), 'DUALVISION_SMOKE': '0', 'PYTHONPATH': '',
                     'MPLBACKEND': 'Agg', 'IPYTHONDIR': str(sandbox / 'ipython'),
                     'JUPYTER_RUNTIME_DIR': str(sandbox / 'jupyter-runtime'),
+                    'JUPYTER_CONFIG_DIR': str(sandbox / 'jupyter-config'),
+                    'JUPYTER_DATA_DIR': str(sandbox / 'jupyter-data'),
                     'MPLCONFIGDIR': str(sandbox / 'matplotlib')},
         }), encoding='utf-8')
         kernel = KernelManager(kernel_name='dualvision-cpu', connection_file=str(sandbox / 'connection.json'),
@@ -71,6 +81,7 @@ print("PASS: both real models, upload callbacks, saved reports and automatic dev
         client = NotebookClient(notebook, timeout=300, km=kernel,
                                 resources={'metadata': {'path': str(sandbox)}})
         try:
+            print('Verifier: starting kernel and executing cells...', flush=True)
             client.execute()
             evidence = json.loads((sandbox / 'device_verification.json').read_text())
             evidence.update(executed_code_cells=sum(c.cell_type == 'code' for c in notebook.cells[:original_count]),
