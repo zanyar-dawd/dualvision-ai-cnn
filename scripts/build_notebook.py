@@ -199,13 +199,15 @@ Confusion matrices, mistakes and correct examples above derive from the saved te
 For a digit upload, use a single clearly written digit with a plain background. Processing removes background intensity, handles ink polarity (with manual override), fits a glyph inside 20×20 pixels, pads to 28×28, and centers its intensity centroid. Color uploads are converted to RGB and resized to 32×32. This can remove useful detail. CIFAR-10 recognizes only ten predefined classes and will still assign an unfamiliar image one of those labels. Softmax scores are not calibrated certainty.
 ''')
     code(inline_module('src/utilities/inference.py'))
-    code('''dashboard = prediction_dashboard(experiments, DEVICE)
+    code('''loaded_experiment = next(experiment for experiment in experiments.values() if experiment is not None)
+dashboard_device = next(loaded_experiment["model"].parameters()).device
+dashboard = prediction_dashboard(experiments, dashboard_device)
 
 # Reliable non-interactive fallback after completing training:
-# result = predict_file("my_digit.png", PROJECT_ROOT / "checkpoints" / EXPERIMENT_ID / "mnist" / "best.pt", "mnist", DEVICE)
+# result = predict_file("my_digit.png", PROJECT_ROOT / "checkpoints" / EXPERIMENT_ID / "mnist" / "best.pt", "mnist", dashboard_device)
 # display(result["processed_image"])
 # print(result["top_classes"])
-# result = predict_file("my_object.jpg", PROJECT_ROOT / "checkpoints" / EXPERIMENT_ID / "cifar10" / "best.pt", "cifar10", DEVICE)
+# result = predict_file("my_object.jpg", PROJECT_ROOT / "checkpoints" / EXPERIMENT_ID / "cifar10" / "best.pt", "cifar10", dashboard_device)
 # print(result["top_classes"])
 ''')
     code('''# Fixed official test index 0 for each dataset; included as small demonstration PNGs.
