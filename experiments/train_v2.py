@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 import math
+import os
 import random
 import time
 from pathlib import Path
@@ -33,6 +34,19 @@ CANDIDATE_VERSION = 'accuracy-v2.1'
 
 def recipe_signature(config):
     return hashlib.sha256(json.dumps({'version': CANDIDATE_VERSION, 'config': config}, sort_keys=True).encode()).hexdigest()
+
+
+def validation_target(config):
+    """Return a frozen config target, with the environment variable kept for legacy runs."""
+    value = config.get('target_validation_accuracy')
+    if value is None:
+        value = os.environ.get('DUALVISION_TARGET_VALIDATION', '')
+    if value in (None, ''):
+        return None
+    target = float(value)
+    if not 0.0 < target <= 1.0:
+        raise ValueError('Target validation accuracy must be between 0 and 1.')
+    return target
 
 
 def candidate_optimizer(model, config):
@@ -100,19 +114,19 @@ def cpu_weights(model):
     return {key: value.detach().cpu().clone() for key, value in model.state_dict().items()}
 
 
-def rng_snapshot(loader):
+def rng_snapshot(loader, device=torch.device('cpu')):
     state = np.random.get_state()
     return {'python': random.getstate(), 'numpy': (state[0], state[1].tolist(), *state[2:]),
-            'torch': torch.get_rng_state(), 'cuda': torch.cuda.get_rng_state_all() if torch.cuda.is_available() else [],
+            'torch': torch.get_rng_state(), 'cuda': torch.cuda.get_rng_state_all() if device.type == 'cuda' else [],
             'loader': loader.generator.get_state()}
 
 
-def restore_rng(state, loader):
+def restore_rng(state, loader, device=torch.device('cpu')):
     random.setstate(state['python'])
     value = state['numpy']
     np.random.set_state((value[0], np.asarray(value[1], dtype=np.uint32), *value[2:]))
     torch.set_rng_state(state['torch'])
-    if torch.cuda.is_available() and state['cuda']:
+    if device.type == 'cuda' and state['cuda']:
         torch.cuda.set_rng_state_all(state['cuda'])
     loader.generator.set_state(state['loader'])
 
@@ -150,8 +164,19 @@ def fit_candidate(model, bundle, device, config, folder, metadata, resume=False)
         if interruption.exists():
             prior = max(prior, json.loads(interruption.read_text())['seconds'])
         prior += 5.0  # budget allowance for any work after the last telemetry sample
-        restore_rng(state['rng'], bundle.train)
+        restore_rng(state['rng'], bundle.train, device)
         assert state['scheduler']['next_epoch'] == len(history) + 1
+        target_accuracy = validation_target(config)
+        if target_accuracy is not None and history and max(row['validation_accuracy'] for row in history) >= target_accuracy:
+            model.load_state_dict(best_state)
+            metadata = {**metadata, 'training_status': 'complete', 'test_status': 'not_evaluated',
+                        'best_epoch': best_epoch, 'best_validation_accuracy': best_key[0],
+                        'history': history, 'stop_reason': f'target_validation_accuracy_{target_accuracy:.4f}',
+                        'training_seconds': prior, 'telemetry': None,
+                        'training_accuracy_kind': 'mixed-label weighted agreement in train mode; clean_train is unmixed evaluation-mode accuracy',
+                        'overfitting_claim': 'No guarantee of absent overfitting; inspect clean train/validation curves and final generalization.'}
+            save_checkpoint(folder / 'best.pt', model, metadata)
+            return metadata
     if prior >= config['max_minutes'] * 60:
         raise RuntimeError('No training budget remains; do not silently reset the budget.')
     started = time.perf_counter()
@@ -169,7 +194,7 @@ def fit_candidate(model, bundle, device, config, folder, metadata, resume=False)
         except (RuntimeError, FloatingPointError, KeyboardInterrupt) as error:
             elapsed = prior + time.perf_counter() - started
             atomic_torch_save({'state_dict': cpu_weights(model), 'optimizer': optimizer.state_dict(),
-                               'rng': rng_snapshot(bundle.train), 'interrupted_epoch': epoch,
+                               'rng': rng_snapshot(bundle.train, device), 'interrupted_epoch': epoch,
                                'config': config, 'seconds': elapsed}, folder / 'interrupted.pt')
             write_json(folder / 'interruption.json', {'epoch': epoch, 'seconds': elapsed, 'reason': str(error),
                        'resume_policy': 'Resume the complete preceding epoch snapshot; partial epoch is not treated as complete.'})
@@ -191,12 +216,17 @@ def fit_candidate(model, bundle, device, config, folder, metadata, resume=False)
         snapshot = {'candidate_version': CANDIDATE_VERSION, 'dataset': metadata['dataset'], 'config': config, 'metadata': metadata,
                     'model': cpu_weights(model), 'optimizer': optimizer.state_dict(), 'history': list(history),
                     'best_state': best_state, 'best_key': best_key, 'best_epoch': best_epoch, 'bad_epochs': bad_epochs,
-                    'seconds': prior + time.perf_counter() - started, 'rng': rng_snapshot(bundle.train),
+                    'seconds': prior + time.perf_counter() - started, 'rng': rng_snapshot(bundle.train, device),
                     'scheduler': {'kind': 'warmup_cosine', 'next_epoch': epoch + 1}}
         atomic_torch_save(snapshot, folder / 'resume.pt')
         write_json(folder / 'history.json', history)
         print(f"Epoch {epoch:03d}/{config['epochs']} | clean train {clean['accuracy']:.2%} | "
               f"validation {validation['accuracy']:.2%} | gap {row['clean_accuracy_gap']:.2%} | {row['seconds']:.1f}s", flush=True)
+        target_accuracy = validation_target(config)
+        if target_accuracy is not None:
+            if row['validation_accuracy'] >= target_accuracy:
+                stop_reason = f'target_validation_accuracy_{target_accuracy:.4f}'
+                break
         if epoch >= config['minimum_epochs'] and bad_epochs >= config['patience']:
             stop_reason = 'early_stopping'
             break
@@ -271,7 +301,7 @@ def run_candidate(dataset, config, experiment_id='accuracy-v2', device_preferenc
     return result
 
 
-def evaluate_candidate(dataset, config, experiment_id, device_preference='cpu'):
+def evaluate_candidate(dataset, config, experiment_id, device_preference='auto'):
     if experiment_id == 'baseline' or not experiment_id or any(c not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-' for c in experiment_id):
         raise ValueError('Use a new simple experiment ID, never baseline.')
     checkpoint = Path('checkpoints') / experiment_id / dataset / 'best.pt'
@@ -300,7 +330,8 @@ def evaluate_candidate(dataset, config, experiment_id, device_preference='cpu'):
     return evaluation
 
 
-def predict_candidate_file(path, checkpoint, dataset, device='cpu', polarity='auto'):
+def predict_candidate_file(path, checkpoint, dataset, device='auto', polarity='auto'):
+    device, _ = select_device(device)
     model = make_candidate(dataset)
     metadata = load_checkpoint(checkpoint, model, device, {'dataset': dataset, 'candidate_version': CANDIDATE_VERSION})
     return predict_image(model, path, metadata, torch.device(device), polarity)

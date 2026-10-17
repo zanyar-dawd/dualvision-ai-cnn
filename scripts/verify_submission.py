@@ -24,9 +24,11 @@ def main():
     displayed_pngs = {hashlib.sha256(base64.b64decode(output['data']['image/png'])).hexdigest()
                      for cell in code for output in cell.outputs
                      if 'image/png' in output.get('data', {})}
+    selected = {'mnist': 'accuracy-mnist-997-20261017',
+                'cifar10': 'accuracy-max-20261017'}
     expected_pngs = {hashlib.sha256(path.read_bytes()).hexdigest()
                     for name in ['mnist', 'cifar10']
-                    for path in (root / 'results/baseline' / name).glob('*.png')}
+                    for path in (root / 'results' / selected[name] / name).glob('*.png')}
     assert expected_pngs <= displayed_pngs, 'Notebook plots must match the saved measured figures exactly.'
     assert not any('from src.' in cell.source or 'import src' in cell.source for cell in code)
     assignments = {}
@@ -50,19 +52,28 @@ def main():
     assert all(cpu['widget_callbacks'][name]['passed'] for name in ['mnist', 'cifar10'])
     audit = json.loads((root / 'results/real_experiment_audit.json').read_text())
     assert all(audit[name]['test_count'] == 10000 for name in ['mnist', 'cifar10'])
-    tests = ET.parse(root / 'results/pytest.xml').getroot()
+    cuda = json.loads((root / 'results/cuda_notebook_verification.json').read_text())
+    assert cuda['device'] == 'cuda' and cuda['cuda_visible']
+    assert cuda['automatic_device_selection'] and cpu['automatic_device_selection']
+    assert cuda['embedded_assets_only'] and cuda['no_dataset_directory'] and cuda['no_retraining']
+    assert cuda['real_gradcam_cuda_verified']
+    assert all(cuda['widget_callbacks'][name]['passed'] for name in ['mnist', 'cifar10'])
+    tests = ET.parse(root / 'results/portability_tests.xml').getroot()
     assert all(int(suite.get('failures', 0)) == int(suite.get('errors', 0)) == 0
                for suite in tests.iter('testsuite'))
     tracked = subprocess.check_output(['git', 'ls-files'], cwd=root, text=True).splitlines()
     assert not any(path.endswith(('.pt', '.pth')) or
                    (path.startswith('data/') and path != 'data/.gitkeep') for path in tracked)
     evidence = {'technical_submission_ready': True, 'executed_code_cells': len(code),
+                'automatic_cpu_and_cuda_notebooks_verified': True,
                 'embedded_assets_verified': len(manifest), 'notebook_error_outputs': 0,
                 'displayed_report_figures_match_saved_pngs': len(expected_pngs),
                 'cpu_without_datasets_or_retraining': True, 'both_upload_callbacks_verified': True,
                 'real_gradcam_cpu_verified': True, 'test_metrics_and_figures_audited': True,
                 'no_datasets_or_standalone_weights_tracked_by_git': True,
-                'personal_details_pending': '[Your name]' in notebook.cells[0].source}
+                'student_name': 'Zanyar Dawd',
+                'personal_details_pending': any(marker in notebook.cells[0].source for marker in
+                    ['[Your name]', '[Your ID]', '[Course name]', '[Instructor name]', '[Date]'])}
     write_json(root / 'results/submission_verification.json', evidence)
     print(json.dumps(evidence, indent=2))
 

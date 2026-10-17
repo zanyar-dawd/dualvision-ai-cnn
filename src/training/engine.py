@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import torch
 from torch import nn
-from src.utilities.runtime import IMPLEMENTATION_VERSION, write_json
+from src.utilities.runtime import IMPLEMENTATION_VERSION, write_json, select_device
 from src.utilities.hardware import TrainingGuard, TrainingBudgetExceeded
 
 
@@ -50,8 +50,9 @@ def save_checkpoint(path: Path, model, metadata: dict) -> None:
     temporary.replace(path)
 
 
-def load_checkpoint(path: Path, model, device, expected: dict | None = None) -> dict:
-    payload = torch.load(path, map_location='cpu', weights_only=True)
+def load_checkpoint(path: Path, model, device='auto', expected: dict | None = None) -> dict:
+    device, _ = select_device(device)
+    payload = torch.load(path, map_location=device, weights_only=True)
     if payload.get('schema') != 1 or not isinstance(payload.get('metadata'), dict):
         raise ValueError('Unsupported checkpoint format.')
     meta = payload['metadata']

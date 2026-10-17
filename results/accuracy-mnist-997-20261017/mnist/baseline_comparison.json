@@ -1,0 +1,22 @@
+[
+  {
+    "model": "historical baseline",
+    "architecture": "baseline custom CNN",
+    "parameters": 421738,
+    "best_validation_accuracy": 0.9925,
+    "test_accuracy": 0.9925,
+    "test_loss": 0.026767529836355244,
+    "macro_f1": 0.9924741889777803,
+    "training_seconds": 320.8460107000001
+  },
+  {
+    "model": "validation-selected candidate",
+    "architecture": "digitnet-plus-v2",
+    "parameters": 435754,
+    "best_validation_accuracy": 0.997,
+    "test_accuracy": 0.9965,
+    "test_loss": 0.012143130768417904,
+    "macro_f1": 0.996487687675186,
+    "training_seconds": 1480.2737273000002
+  }
+]

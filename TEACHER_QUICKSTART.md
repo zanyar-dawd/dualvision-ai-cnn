@@ -13,10 +13,12 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m jupyterlab Homework_5_DualVision.ipynb
 ```
 
-4. Run all cells with the defaults: `ALLOW_TRAINING=False`, `DOWNLOAD_DATA=False` and `EXPERIMENT_ID="baseline"`.
-5. The notebook checks and restores its embedded files, automatically uses CPU when CUDA is absent, and displays the saved measured report. Uploading an image runs the actual trained model locally. Path-based `predict_file(...)` also works if widget rendering is unavailable.
+4. Run all cells with the defaults: `ALLOW_TRAINING=False`, `DOWNLOAD_DATA=False` and `EXPERIMENT_ID="selected-final"`.
+5. The notebook checks and restores its embedded files, uses a verified NVIDIA CUDA device when available, and otherwise automatically uses CPU. Failed CUDA verification displays its reason and falls back to CPU. The selected device is clearly printed. It displays the saved measured report without retraining. Uploading an image runs the actual trained model locally. Path-based `predict_file(...)` also works if widget rendering is unavailable.
 
-The embedded-artifacts cell is collapsed to keep the report readable. Expand it if desired; it contains encoded model/report data, not hidden training code. Restored files appear under `checkpoints/baseline/` and `results/baseline/`. If an existing file has different contents, use a fresh folder instead of overwriting a previous experiment.
+For troubleshooting, set `DEVICE_PREFERENCE = "cpu"` in the controls cell and rerun the notebook. The default is `"auto"`. Keep `ALLOW_TRAINING = False` and `DOWNLOAD_DATA = False`. Prediction functions also accept `device="cpu"`; no model conversion or retraining is necessary.
+
+The embedded-artifacts cell is collapsed to keep the report readable. Expand it if desired; it contains encoded model/report data, not hidden training code. Restored files appear under the two selected experiment directories named in the notebook. If an existing file has different contents, use a fresh folder instead of overwriting a previous experiment.
 
 Reported test metrics are the original held-out experiment results, bound to the selected checkpoints by SHA-256. Running the default notebook displays those results without re-evaluating all 20,000 test images. The included fixed-index examples and uploaded files do execute fresh inference on the selected device.
 

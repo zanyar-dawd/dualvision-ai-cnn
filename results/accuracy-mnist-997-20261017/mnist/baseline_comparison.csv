@@ -1,0 +1,3 @@
+model,architecture,parameters,best_validation_accuracy,test_accuracy,test_loss,macro_f1,training_seconds
+historical baseline,baseline custom CNN,421738,0.9925,0.9925,0.026767529836355244,0.9924741889777803,320.8460107000001
+validation-selected candidate,digitnet-plus-v2,435754,0.997,0.9965,0.012143130768417904,0.996487687675186,1480.2737273000002

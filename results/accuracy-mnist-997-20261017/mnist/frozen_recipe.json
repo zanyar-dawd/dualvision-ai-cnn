@@ -1,0 +1,81 @@
+{
+  "implementation": "dualvision-v1",
+  "candidate_version": "accuracy-v2.1",
+  "dataset": "mnist",
+  "architecture": "digitnet-plus-v2",
+  "config": {
+    "architecture": "digitnet-plus-v2",
+    "seed": 42,
+    "epochs": 60,
+    "batch_size": 128,
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "warmup_epochs": 3,
+    "patience": 15,
+    "minimum_epochs": 20,
+    "mixup_alpha": 0.0,
+    "mixup_probability": 0.0,
+    "max_minutes": 120
+  },
+  "smoke": false,
+  "recipe_sha256": "d752fbfa9f91ea6875fe95262f239366bad47df3b88d50f93749d6315310ce12",
+  "runtime": {
+    "python": "3.12.11",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "device": "cuda",
+    "requested_device": "cuda",
+    "cuda_available": true,
+    "cuda_verified": true,
+    "fallback_reason": null,
+    "torch_cuda_runtime": "12.6",
+    "tensor_operation_verified": true,
+    "gpu": "Quadro T1000",
+    "gpu_capability": [
+      7,
+      5
+    ],
+    "compiled_cuda_architectures": [
+      "sm_61",
+      "sm_70",
+      "sm_75",
+      "sm_80",
+      "sm_86",
+      "sm_90"
+    ],
+    "gpu_memory_bytes": 4294705152,
+    "versions": {
+      "torch": "2.8.0+cu126",
+      "torchvision": "0.23.0+cu126",
+      "numpy": "2.2.6",
+      "scikit-learn": "1.6.1",
+      "matplotlib": "3.10.3",
+      "Pillow": "11.2.1"
+    },
+    "deterministic_algorithms": true,
+    "cudnn_benchmark": false,
+    "cpu_threads": 4
+  },
+  "parameters": 435754,
+  "classes": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9"
+  ],
+  "mean": [
+    0.13073687891823396
+  ],
+  "std": [
+    0.30819040233228273
+  ],
+  "split_sha256": "8215f3981644bbd590d2a3951defaacedcb91fe01d068fa0a49477bb48f45105",
+  "seed": 42,
+  "benchmark_reuse": "The baseline test scores were previously inspected; no test feedback enters this follow-up training."
+}

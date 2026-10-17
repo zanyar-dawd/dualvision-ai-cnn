@@ -1,0 +1,3 @@
+model,architecture,parameters,best_validation_accuracy,test_accuracy,test_loss,macro_f1,training_seconds
+historical baseline,baseline custom CNN,696618,0.9162,0.9092,0.3988180894613266,0.9092036896178218,3285.7719838
+validation-selected candidate,visionnet-wrn28-4-v2,5849050,0.9412,0.9332,0.20026192960739136,0.9332764468756418,26827.089779200003

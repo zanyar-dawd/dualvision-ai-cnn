@@ -1,0 +1,11 @@
+{
+  "dataset": "cifar10",
+  "selection_basis": "validation_accuracy_then_validation_loss",
+  "baseline_best_validation_accuracy": 0.9162,
+  "candidate_best_validation_accuracy": 0.9412,
+  "candidate_best_epoch": 148,
+  "official_test_used_for_selection": false,
+  "historical_baseline_test_was_known": true,
+  "selected": "candidate",
+  "final_test_action": "evaluate_once"
+}

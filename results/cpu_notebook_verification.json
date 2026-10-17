@@ -8,20 +8,21 @@
       "passed": true,
       "prediction": [
         "7",
-        0.9999998807907104
+        1.0
       ]
     },
     "cifar10": {
       "passed": true,
       "prediction": [
         "cat",
-        0.9999998807907104
+        0.9986959099769592
       ]
     }
   },
   "real_gradcam_cpu_verified": true,
-  "executed_code_cells": 22,
+  "executed_code_cells": 24,
   "source_modules_available": false,
   "embedded_assets_only": true,
-  "note": "CPU execution verified with CUDA hidden; the installed PyTorch wheel still contains CUDA libraries."
+  "automatic_device_selection": true,
+  "note": "CPU test hides CUDA; CUDA test uses the real GPU. Installed wheel includes CUDA libraries."
 }

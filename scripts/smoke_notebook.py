@@ -6,8 +6,6 @@ from pathlib import Path
 import tempfile
 
 import nbformat
-from nbclient import NotebookClient
-from jupyter_client.kernelspec import KernelSpecManager
 import sys
 
 
@@ -25,6 +23,13 @@ def main():
         # A private kernelspec avoids modifying the user's Jupyter installation.
         kernel_dir = sandbox / 'kernels' / 'dualvision-test'
         kernel_dir.mkdir(parents=True)
+        os.environ['JUPYTER_CONFIG_DIR'] = str(sandbox / 'jupyter-config')
+        os.environ['JUPYTER_DATA_DIR'] = str(sandbox / 'jupyter-data')
+        os.environ['JUPYTER_RUNTIME_DIR'] = str(sandbox / 'jupyter-runtime')
+        os.environ['IPYTHONDIR'] = str(sandbox / 'ipython')
+        from nbclient import NotebookClient
+        from jupyter_client import KernelManager
+        from jupyter_client.kernelspec import KernelSpecManager
         (kernel_dir / 'kernel.json').write_text(json.dumps({
             'argv': [sys.executable, '-m', 'ipykernel_launcher', '-f', '{connection_file}',
                      '--HistoryManager.hist_file=:memory:'],
@@ -32,10 +37,11 @@ def main():
             'env': {'DUALVISION_SMOKE': '0' if args.pending else '1', 'DUALVISION_ROOT': str(sandbox),
                     'MPLBACKEND': 'Agg', 'PYTHONPATH': '', 'IPYTHONDIR': str(sandbox / 'ipython'),
                     'JUPYTER_RUNTIME_DIR': str(sandbox / 'jupyter-runtime'),
+                    'JUPYTER_CONFIG_DIR': str(sandbox / 'jupyter-config'),
+                    'JUPYTER_DATA_DIR': str(sandbox / 'jupyter-data'),
                     'MPLCONFIGDIR': str(sandbox / 'matplotlib')},
         }), encoding='utf-8')
         manager = KernelSpecManager(kernel_dirs=[str(sandbox / 'kernels')])
-        from jupyter_client import KernelManager
         kernel = KernelManager(kernel_name='dualvision-test', kernel_spec_manager=manager,
                                connection_file=str(sandbox / 'connection.json'))
         client = NotebookClient(notebook, timeout=300, km=kernel,

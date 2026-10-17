@@ -1,0 +1,17 @@
+{
+  "baseline_comparison.csv": "bc77be514b5c77df9bb588498526ba1fb075f3b1bc66a7c4ca056e708626df69",
+  "baseline_comparison.json": "2683bbb06c0e5320e6a304973d27c971f4c7c4aab7b6a3d8055c93e0e9a4662c",
+  "confusion_matrix.png": "30fb5b370fc018b63d4bf2ad5ee64e56c711986ebf6206a8aed61b1a9bcd0267",
+  "correct_samples.png": "990a42461d0b07867ca75d60e4b147a86fd6baec7e36ad18eb70f666c1f9c8a7",
+  "evaluation.json": "1aac8c7403808d4ba14cb25915868552c52adbaf720c7bfdb526fe88d5cb2ae7",
+  "finalization.json": "4880b5fd383aa56ad43ce7cf5901519f413c213d469a3f2f34920c564cc1b969",
+  "final_evaluation_record.json": "95f3c342eeaafe0f768c88d82050e0bb6eb42e0097bd0c2109e0f7b71f4940d6",
+  "frozen_recipe.json": "7d7d65945dd8c2750083ee0b511908cda01a35760cc050c54c2fb1a14f4223df",
+  "history.csv": "65cba2243ea5cdaf7cf08d779cf915f66f352aaccce456f928be150ef5820148",
+  "learning_curves.png": "4853ca76185944450d47c9aa00e87d45abc48d95b67ab93ff845a95b561a5ff5",
+  "mistakes.png": "d650f20439a5e47a810bfc75b9ce93358cd0ff85f414ff738e8974d087c2535c",
+  "per_class_metrics.csv": "b8e3f52c0f82d919c1cc997a85f9f7578f29321ea7009460fe74fc6c6b607e6b",
+  "selection.json": "45146c9b55090f1fc77160d227d0330cdbe61cbf1cc7b73113eda14e325f2de3",
+  "training.json": "2b28d5710eaae1fca17fef895e0b11bb24800e81c2bbbdf3b997b333d215f193",
+  "validation_diagnostics.png": "4853ca76185944450d47c9aa00e87d45abc48d95b67ab93ff845a95b561a5ff5"
+}
