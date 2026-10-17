@@ -1,0 +1,32 @@
+{
+  "mnist": {
+    "architecture": "digitnet-plus-v2",
+    "seed": 42,
+    "epochs": 60,
+    "batch_size": 128,
+    "optimizer": "adamw",
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "warmup_epochs": 3,
+    "patience": 15,
+    "minimum_epochs": 20,
+    "mixup_alpha": 0.0,
+    "mixup_probability": 0.0,
+    "max_minutes": 120
+  },
+  "cifar10": {
+    "architecture": "visionnet-wrn28-4-v2",
+    "seed": 42,
+    "epochs": 200,
+    "batch_size": 64,
+    "optimizer": "sgd",
+    "lr": 0.05,
+    "weight_decay": 0.0005,
+    "warmup_epochs": 5,
+    "patience": 35,
+    "minimum_epochs": 100,
+    "mixup_alpha": 0.2,
+    "mixup_probability": 0.5,
+    "max_minutes": 480
+  }
+}
